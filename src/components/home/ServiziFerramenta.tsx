@@ -4,42 +4,44 @@ import { Truck, ShieldCheck, Percent, Handshake } from "lucide-react";
 const servizi = [
   {
     icon: Truck,
-    title: "Spedizioni rapide",
-    desc: "Consegna in 24/48h su tutti gli ordini nazionali.",
+    title: "Consegne rapide",
+    desc: "Direttamente sul cantiere o in officina, in 24/48h.",
+    tone: "verdeFerramenta",
   },
   {
     icon: ShieldCheck,
-    title: "Qualità garantita",
-    desc: "Solo marchi affidabili, prodotti verificati da esperti.",
+    title: "Prodotti robusti",
+    desc: "Solo marchi affidabili, scelti per resistere a lungo.",
+    tone: "oro",
   },
   {
     icon: Percent,
-    title: "Promozioni trasparenti",
-    desc: "Offerte chiare e prezzi senza sorprese.",
+    title: "Promozioni chiare",
+    desc: "Sconti veri, nessuna sorpresa.",
+    tone: "rame",
   },
   {
     icon: Handshake,
-    title: "Consulenza diretta",
-    desc: "Assistenza personalizzata con passione artigiana.",
+    title: "Consulenza sincera",
+    desc: "Ti aiutiamo a scegliere davvero quello che serve.",
+    tone: "noce",
   },
 ];
 
 export default function ServiziFerramenta() {
   return (
-    <section
-      className="bg-[#f6f3ed] w-full py-10 md:py-18 border-b border-[#c1ad7a]"
-    >
-      <div className="max-w-6xl mx-auto px-5 grid md:grid-cols-4 grid-cols-1 gap-8">
+    <section className="bg-cemento w-full py-10 border-b border-cemento">
+      <div className="max-w-6xl mx-auto px-5 grid md:grid-cols-4 grid-cols-1 gap-6">
         {servizi.map((s) => (
           <div
             key={s.title}
-            className="flex flex-col items-center text-center py-6 px-3 bg-[#faf7ef] border border-[#e4dbc1] rounded-md shadow hover:shadow-lg transition"
+            className="flex flex-col items-center text-center py-7 px-3 bg-white border-2 border-cemento rounded-md shadow-rustic-card hover:shadow-xl transition"
           >
-            <s.icon size={36} className="mb-3 text-[#b08d37]" />
-            <div className="font-semibold text-[#7f6b30] mb-1 text-lg">
+            <s.icon size={34} className={`mb-2 text-${s.tone}`} />
+            <div className={`font-semibold text-${s.tone} mb-1 text-lg font-playfair`}>
               {s.title}
             </div>
-            <div className="text-[#786d53] text-sm font-light">{s.desc}</div>
+            <div className="text-scuroMetallo text-sm font-light">{s.desc}</div>
           </div>
         ))}
       </div>

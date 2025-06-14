@@ -24,13 +24,20 @@ export default {
 				sans: ['Inter', "sans-serif"],
 			},
 			colors: {
-				oro: "#b08d37",
-				oroDark: "#7f6b30",
-				ferramentaCemento: "#ece4d6",
-				ferramentaLegno: "#d3b790",
+				oro: "#bfa046",
+				rame: "#a1643b",
+				acciaio: "#8e939b",
+				cemento: "#ded9d3",
+				noce: "#85775c",
+				verdeFerramenta: "#60766b",
+				scuroMetallo: "#55585c",
+				// i colori chiari restano per background
+				biancoFerramenta: "#f5f3ef",
+				ombra: "#d1b46d44",
 			},
       boxShadow: {
-        'deep-gold': '0 5px 25px -4px #c9b03744, 0 1.5px 0px #e5e7eb inset',
+        'deep-gold': '0 5px 25px -4px #bfa04644, 0 1.5px 0px #e5e7eb inset',
+        'rustic-card': '0 2px 12px -2px #85775c25, 0 1px 0 #eadbbb inset',
       }
 		}
 	},
