@@ -7,9 +7,11 @@ import ContattiFerramenta from "../components/home/ContattiFerramenta";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
+  const { role, isAdmin } = useUserRole(user);
   
   // Scroll references
   const inizioRef = useRef<HTMLDivElement>(null);
@@ -88,6 +90,18 @@ export default function Home() {
                     <UserIcon size={18} />
                     <span className="hidden md:inline">Area Cliente</span>
                   </a>
+                  
+                  {/* Mostra pulsante Admin solo se l'utente è amministratore */}
+                  {isAdmin() && (
+                    <a
+                      href={`/admin/${user.id}`}
+                      className="flex items-center gap-2 px-3 py-2 bg-ruggine/20 text-ruggine rounded-lg hover:bg-ruggine/30 transition font-oswald"
+                    >
+                      <UserIcon size={18} />
+                      <span className="hidden md:inline">Admin</span>
+                    </a>
+                  )}
+                  
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-3 py-2 bg-ruggine/20 text-sabbia rounded-lg hover:bg-ruggine/30 transition font-oswald"
