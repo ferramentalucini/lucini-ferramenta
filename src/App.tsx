@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import ClienteAreaNew from "./pages/ClienteAreaNew";
 import AdminArea from "./pages/AdminArea";
 import AdminAreaNew from "./pages/AdminAreaNew";
+import { Toaster } from "@/components/ui/toaster";
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/admin/:userId" element={<AdminAreaNew />} />
         <Route path="*" element={<Home />} />
       </Routes>
+      <Toaster />
     </BrowserRouter>
   );
 };

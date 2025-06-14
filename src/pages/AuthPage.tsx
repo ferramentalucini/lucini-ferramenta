@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogIn, UserPlus, ArrowLeft } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type AuthMode = "login" | "register";
 type LoginMethod = "email" | "phone";
@@ -46,15 +48,32 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
+    console.log("🔄 Inizio registrazione utente");
+    console.log("📧 Email:", email);
+    console.log("👤 Nome:", nome, "Cognome:", cognome);
+    console.log("📱 Telefono:", numeroTelefono);
+    console.log("🏷️ Nome utente:", nomeUtente);
+
     // Controllo solo i campi obbligatori (numero telefono è opzionale)
     if (!nome || !cognome || !email || !password || !nomeUtente) {
-      setError("Compila tutti i campi obbligatori");
+      const missingFields = [];
+      if (!nome) missingFields.push("Nome");
+      if (!cognome) missingFields.push("Cognome");
+      if (!email) missingFields.push("Email");
+      if (!password) missingFields.push("Password");
+      if (!nomeUtente) missingFields.push("Nome utente");
+      
+      const errorMsg = `Campi mancanti: ${missingFields.join(", ")}`;
+      console.error("❌ Errore validazione:", errorMsg);
+      setError(errorMsg);
       setLoading(false);
       return;
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      console.log("🚀 Chiamata a supabase.auth.signUp...");
+      
+      const signUpData = {
         email,
         password,
         options: {
@@ -62,20 +81,89 @@ export default function AuthPage() {
           data: {
             nome,
             cognome,
-            numero_telefono: numeroTelefono || null, // Se vuoto, passa null
+            numero_telefono: numeroTelefono || null,
             nome_utente: nomeUtente,
           }
         }
-      });
-
-      if (error) throw error;
+      };
       
-      // Registrazione completata, reindirizza con userId
+      console.log("📦 Dati inviati a Supabase:", JSON.stringify(signUpData, null, 2));
+      
+      const { data, error } = await supabase.auth.signUp(signUpData);
+
+      console.log("📨 Risposta da Supabase:");
+      console.log("✅ Data:", data);
+      if (error) {
+        console.error("❌ Error:", error);
+      }
+
+      if (error) {
+        console.error("💥 Errore durante signUp:", error.message);
+        throw error;
+      }
+      
       if (data.user) {
+        console.log("🎉 Utente creato con successo:", data.user.id);
+        console.log("📧 Email finale utente:", data.user.email);
+        
+        // Aspettiamo un momento per permettere ai trigger di completare
+        console.log("⏳ Attendiamo completamento trigger...");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Verifichiamo che il ruolo sia stato assegnato
+        console.log("🔍 Verifica assegnazione ruolo...");
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .single();
+          
+        if (roleError) {
+          console.error("❌ Errore verifica ruolo:", roleError);
+        } else {
+          console.log("✅ Ruolo assegnato:", roleData.role);
+        }
+        
+        // Verifichiamo che il profilo sia stato creato
+        console.log("🔍 Verifica creazione profilo...");
+        const { data: profileData, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (profileError) {
+          console.error("❌ Errore verifica profilo:", profileError);
+        } else {
+          console.log("✅ Profilo creato:", profileData);
+        }
+        
+        toast({
+          title: "Registrazione completata!",
+          description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
+        });
+        
+        console.log("🔄 Reindirizzamento a:", `/cliente/${data.user.id}`);
         window.location.replace(`/cliente/${data.user.id}`);
+      } else {
+        console.warn("⚠️ Nessun utente restituito da signUp");
+        setError("Registrazione completata ma nessun dato utente ricevuto");
       }
     } catch (error: any) {
-      setError(error.message);
+      console.error("💥 Errore catturato:", error);
+      console.error("📝 Dettagli errore:", {
+        message: error.message,
+        code: error.code,
+        status: error.status,
+        details: error.details
+      });
+      setError(`Errore durante la registrazione: ${error.message}`);
+      
+      toast({
+        title: "Errore durante la registrazione",
+        description: error.message,
+        variant: "destructive",
+      });
     }
     
     setLoading(false);
@@ -85,6 +173,10 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    console.log("🔄 Inizio login utente");
+    console.log("🔑 Metodo:", loginMethod);
+    console.log("📧 Identificatore:", loginIdentifier);
 
     if (!loginIdentifier || !password) {
       setError("Inserisci le credenziali");
@@ -96,21 +188,21 @@ export default function AuthPage() {
       let signInData;
       
       if (loginMethod === "phone") {
-        // Login con numero di telefono (tramite Twilio)
+        console.log("📱 Login con telefono");
         signInData = await supabase.auth.signInWithPassword({
           phone: loginIdentifier,
           password,
         });
       } else {
         // Login con email o nome utente
-        // Prima provo con email
         if (loginIdentifier.includes("@")) {
+          console.log("📧 Login con email");
           signInData = await supabase.auth.signInWithPassword({
             email: loginIdentifier,
             password,
           });
         } else {
-          // Se non è email, cerco l'email dal nome utente
+          console.log("👤 Login con nome utente");
           const { data: profile } = await supabase
             .from("user_profiles")
             .select("email")
@@ -128,11 +220,12 @@ export default function AuthPage() {
 
       if (signInData.error) throw signInData.error;
       
-      // Login completato, reindirizza con userId
       if (signInData.data.user) {
+        console.log("✅ Login completato:", signInData.data.user.id);
         window.location.replace(`/cliente/${signInData.data.user.id}`);
       }
     } catch (error: any) {
+      console.error("💥 Errore login:", error);
       setError(error.message);
     }
     
