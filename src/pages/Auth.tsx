@@ -15,12 +15,20 @@ export default function Auth() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.replace("/");
+      if (session) {
+        // Reindirizza alla pagina cliente con l'UID dell'utente
+        window.location.replace(`/cliente/${session.user.id}`);
+      }
     });
-    // subscribe to prevent flicker
+    
+    // Ascolta i cambiamenti di stato dell'autenticazione
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) window.location.replace("/");
+      if (session) {
+        // Reindirizza alla pagina cliente con l'UID dell'utente
+        window.location.replace(`/cliente/${session.user.id}`);
+      }
     });
+    
     return () => listener?.subscription.unsubscribe();
   }, []);
 
@@ -37,17 +45,25 @@ export default function Auth() {
 
     if (authMode === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setErr(error.message);
+      if (error) {
+        setErr(error.message);
+        setLoading(false);
+      }
+      // Il reindirizzamento avviene automaticamente tramite onAuthStateChange
     } else {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin + "/" }
+        options: { 
+          emailRedirectTo: `${window.location.origin}/auth`
+        }
       });
-      // NIENTE conferma email: non viene mostrato nulla che la richieda!
-      if (error) setErr(error.message);
+      if (error) {
+        setErr(error.message);
+        setLoading(false);
+      }
+      // Il reindirizzamento avviene automaticamente tramite onAuthStateChange se il login è immediato
     }
-    setLoading(false);
   }
 
   return (
