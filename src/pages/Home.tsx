@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import HeroFerramenta from "@/components/home/HeroFerramenta";
-import ServiziFerramenta from "@/components/home/ServiziFerramenta";
-import ProdottiConsigliati from "@/components/home/ProdottiConsigliati";
-import ChiSiamoFerramenta from "@/components/home/ChiSiamoFerramenta";
-import ContattiFerramenta from "@/components/home/ContattiFerramenta";
+import { HeroFerramenta } from "@/components/home/HeroFerramenta";
+import { ServiziFerramenta } from "@/components/home/ServiziFerramenta";
+import { ProdottiConsigliati } from "@/components/home/ProdottiConsigliati";
+import { ChiSiamoFerramenta } from "@/components/home/ChiSiamoFerramenta";
+import { ContattiFerramenta } from "@/components/home/ContattiFerramenta";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, LogIn } from "lucide-react";
 
