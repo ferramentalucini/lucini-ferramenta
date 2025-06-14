@@ -1,5 +1,4 @@
-
-import { ShoppingCart, Hammer, Screwdriver, Wrench, Drill } from "lucide-react";
+import { ShoppingCart, Hammer, Wrench, Drill } from "lucide-react";
 
 const prodotti = [
   {
@@ -20,7 +19,7 @@ const prodotti = [
     nome: "Set Cacciaviti Wera",
     descr: "Punta magnetica, presa robusta — precisi su ogni vite.",
     img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80",
-    icona: <Screwdriver className="text-rame" size={22} />,
+    icona: <Wrench className="text-rame" size={22} />,
     colore: "border-rame",
   },
   {
