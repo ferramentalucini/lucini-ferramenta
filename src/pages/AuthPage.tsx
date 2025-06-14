@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -27,17 +28,11 @@ export default function AuthPage() {
   useEffect(() => {
     // Redirect se già loggato
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // Reindirizza alla pagina personale dell'utente con UID
-        window.location.replace(`/cliente/${session.user.id}`);
-      }
+      if (session) window.location.replace("/cliente");
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        // Reindirizza alla pagina personale dell'utente con UID
-        window.location.replace(`/cliente/${session.user.id}`);
-      }
+      if (session) window.location.replace("/cliente");
     });
 
     return () => listener?.subscription.unsubscribe();
@@ -56,7 +51,7 @@ export default function AuthPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -72,10 +67,8 @@ export default function AuthPage() {
 
       if (error) throw error;
       
-      // Anche senza conferma email, reindirizza alla pagina dell'utente
-      if (data.user) {
-        window.location.replace(`/cliente/${data.user.id}`);
-      }
+      // Registrazione completata, reindirizza
+      window.location.replace("/cliente");
     } catch (error: any) {
       setError(error.message);
     }
@@ -129,11 +122,6 @@ export default function AuthPage() {
       }
 
       if (signInData.error) throw signInData.error;
-      
-      // Reindirizza alla pagina personale dell'utente con UID
-      if (signInData.data.user) {
-        window.location.replace(`/cliente/${signInData.data.user.id}`);
-      }
     } catch (error: any) {
       setError(error.message);
     }
