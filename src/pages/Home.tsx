@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import HeroFerramenta from "../components/home/HeroFerramenta";
 import ServiziFerramenta from "../components/home/ServiziFerramenta";
@@ -83,7 +82,7 @@ export default function Home() {
               {user ? (
                 <>
                   <a
-                    href="/cliente"
+                    href={`/cliente/${user.id}`}
                     className="flex items-center gap-2 px-3 py-2 bg-senape/20 text-senape rounded-lg hover:bg-senape/30 transition font-oswald"
                   >
                     <UserIcon size={18} />

@@ -1,5 +1,5 @@
-
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,12 +15,13 @@ type UserProfile = {
 };
 
 export default function ClienteAreaNew() {
+  const { userId } = useParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [userId]);
 
   const checkAuth = async () => {
     try {
@@ -28,6 +29,19 @@ export default function ClienteAreaNew() {
       
       if (!session) {
         window.location.replace("/auth");
+        return;
+      }
+
+      // Verifica che l'userId nell'URL corrisponda all'utente loggato
+      if (userId && userId !== session.user.id) {
+        console.error("Accesso negato: userId non corrispondente");
+        window.location.replace(`/cliente/${session.user.id}`);
+        return;
+      }
+
+      // Se non c'è userId nell'URL, reindirizza con l'ID corretto
+      if (!userId) {
+        window.location.replace(`/cliente/${session.user.id}`);
         return;
       }
 
