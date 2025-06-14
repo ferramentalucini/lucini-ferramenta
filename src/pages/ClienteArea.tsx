@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Profile = { id: string, email: string, role: string };
 
-export default function AdminArea() {
+export default function ClienteArea() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,14 +14,20 @@ export default function AdminArea() {
         return;
       }
       const { data: prof } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
-      if (prof?.role !== "admin") window.location.replace("/");
       setProfile(prof);
       setLoading(false);
     });
+    // update on login/logout
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setProfile(null);
-      }
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (!session) {
+          setProfile(null);
+          return;
+        }
+        const { data: prof } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+        setProfile(prof);
+        setLoading(false);
+      });
     });
     return () => listener?.subscription.unsubscribe();
   }, []);
@@ -32,10 +38,21 @@ export default function AdminArea() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5f5f7] px-2">
       <div className="bg-white rounded-lg shadow max-w-xl w-full p-8">
-        <div className="mb-2 text-sm text-gray-500">Area Amministratore</div>
+        <div className="mb-2 text-sm text-gray-500">Area Cliente</div>
         <div className="mb-4 text-xl font-bold text-[#b43434]">{profile.email}</div>
-        <div className="mb-6 text-gray-800">
-          {" "}Benvenuto, amministratore. Qui potrai gestire prodotti e ordini (funzionalità prossimamente).
+        <div className="grid gap-3">
+          <div className="bg-gray-50 p-3 rounded flex justify-between items-center">
+            <span>Carrello</span>
+            <span className="text-gray-400">[vuoto]</span>
+          </div>
+          <div className="bg-gray-50 p-3 rounded flex justify-between items-center">
+            <span>Preferiti</span>
+            <span className="text-gray-400">[nessun preferito]</span>
+          </div>
+          <div className="bg-gray-50 p-3 rounded flex justify-between items-center">
+            <span>Ordini effettuati</span>
+            <span className="text-gray-400">[nessun ordine]</span>
+          </div>
         </div>
         <div className="mt-6 flex justify-between">
           <a href="/" className="text-[#b43434] underline">Home</a>
