@@ -1,3 +1,4 @@
+
 import { ShoppingCart, Hammer, Wrench } from "lucide-react";
 
 const prodotti = [
@@ -50,7 +51,7 @@ export default function ProdottiConsigliati() {
         <h2 className="font-oswald text-2xl md:text-3xl font-bold text-bianco mb-3 pl-1 font-header drop-shadow-lg">
           I nostri prodotti best-seller
         </h2>
-        <div className="grid md:grid-cols-5 sm:grid-cols-2 grid-cols-1 gap-6 w-full">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6 w-full">
           {prodotti.map((p) => (
             <div
               key={p.nome}
