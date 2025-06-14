@@ -1,10 +1,10 @@
 
+import React, { useRef, useEffect, useState } from "react";
 import HeroFerramenta from "../components/home/HeroFerramenta";
 import ServiziFerramenta from "../components/home/ServiziFerramenta";
 import ProdottiConsigliati from "../components/home/ProdottiConsigliati";
 import ChiSiamoFerramenta from "../components/home/ChiSiamoFerramenta";
 import ContattiFerramenta from "../components/home/ContattiFerramenta";
-import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { LogIn, LogOut, User as UserIcon } from "lucide-react";
