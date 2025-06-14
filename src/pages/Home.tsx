@@ -1,109 +1,105 @@
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useRef } from "react";
 
-type Profile = { id: string, email: string, role: string };
+const products = [
+  {
+    title: "Trapano Bosch",
+    desc: "Potente e compatto per lavori precisi e veloci.",
+    img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    title: "Martello Stanley",
+    desc: "Affidabilità e resistenza per ogni lavoro.",
+    img: "https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    title: "Set cacciaviti Wera",
+    desc: "Tutto ciò che serve per avvitare in tranquillità.",
+    img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    title: "Chiavi a brugola Beta",
+    desc: "Per lavori di precisione e qualità.",
+    img: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    title: "Metro Stanley",
+    desc: "Preciso ed ergonomico, sempre a portata di mano.",
+    img: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&w=400&q=80",
+  },
+];
 
 export default function Home() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  // Riferimenti per lo scroll
+  const inizioRef = useRef<HTMLDivElement>(null);
+  const prodottiRef = useRef<HTMLDivElement>(null);
+  const contattiRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      const user = session?.user;
-      if (user) {
-        const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-        setProfile(data);
-      } else {
-        setProfile(null);
-      }
-    });
-    // update on login/logout
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle().then(({ data }) => setProfile(data));
-      } else setProfile(null);
-    });
-    // cleanup
-    return () => listener?.subscription.unsubscribe();
-  }, []);
+  const handleScroll = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] flex flex-col items-center justify-center py-6 px-2">
-      <div className="bg-white w-full max-w-xl rounded-lg shadow-md p-8 my-8 border border-gray-200 animate-fade-in">
-        <h1 className="text-3xl font-extrabold mb-2 text-[#b43434] text-center tracking-tight select-none">FerramentaPro</h1>
-        <div className="text-gray-700 text-center mb-6 text-base">
-          Il tuo punto di riferimento per ogni esigenza di ferramenta.<br />Prodotti di qualità, assistenza rapida.
-        </div>
-        {!profile && (
-          <div className="flex justify-center mb-4">
+    <div className="min-h-screen bg-[#f5f5f7] flex flex-col">
+      {/* Header fisso */}
+      <header className="sticky top-0 left-0 z-50 bg-white shadow-lg w-full flex items-center justify-between px-8 py-4">
+        <span className="text-xl md:text-3xl font-extrabold text-[#b43434] tracking-tight select-none">FerramentaPro</span>
+        <nav className="flex gap-4 md:gap-8">
+          <button onClick={() => handleScroll(inizioRef)} className="text-sm md:text-base text-[#b43434] font-semibold hover:underline transition">Inizio</button>
+          <button onClick={() => handleScroll(prodottiRef)} className="text-sm md:text-base text-[#b43434] font-semibold hover:underline transition">Prodotti</button>
+          <button onClick={() => handleScroll(contattiRef)} className="text-sm md:text-base text-[#b43434] font-semibold hover:underline transition">Contatti</button>
+        </nav>
+      </header>
+
+      {/* Contenuto */}
+      <main className="flex-1 w-full mx-auto">
+        {/* Inizio */}
+        <section ref={inizioRef} className="w-full max-w-6xl mx-auto pt-20 md:pt-32 pb-16 px-4 text-center">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-[#b43434] mb-4 drop-shadow-lg">FerramentaPro</h1>
+          <p className="text-lg md:text-2xl text-gray-700 max-w-2xl mx-auto">
+            Il tuo punto di riferimento per ogni esigenza di ferramenta.<br/>
+            Prodotti di qualità, assistenza rapida, passione nel lavoro.
+          </p>
+        </section>
+
+        {/* Prodotti */}
+        <section ref={prodottiRef} className="w-full max-w-6xl mx-auto py-10 px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#b43434] mb-6 text-center">I nostri prodotti</h2>
+          <div className="grid md:grid-cols-5 sm:grid-cols-2 grid-cols-1 gap-7">
+            {products.map((p) => (
+              <div key={p.title} className="rounded-xl shadow-md border bg-[#faf9f7] hover-scale transition overflow-hidden flex flex-col">
+                <img src={p.img} alt={p.title} className="w-full h-36 object-cover" />
+                <div className="p-4 flex-1 flex flex-col">
+                  <div className="font-bold text-[#b43434] text-[19px] mb-2">{p.title}</div>
+                  <div className="text-gray-600 text-sm flex-1">{p.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center mt-8">
             <a
-              href="/auth"
-              className="bg-[#b43434] text-white font-semibold px-7 py-2 rounded-md shadow-md hover:bg-[#932a2a] transition active:scale-95"
+              href="/prodotti"
+              className="bg-[#b43434] text-white font-semibold px-7 py-2 rounded-md shadow-md hover:bg-[#932a2a] transition active:scale-95 text-base"
             >
-              Login / Registrati
+              Tutti i prodotti
             </a>
           </div>
-        )}
-        {profile && (
-          <div className="flex flex-col items-center mt-3">
-            <div className="text-gray-800 text-[15px]">
-              Bentornato, <span className="font-semibold text-[#b43434]">{profile.email}</span>
-            </div>
-            <div className="text-xs mt-1 px-2 py-1 rounded bg-gray-100 text-gray-500 border border-gray-200">
-              Ruolo:{" "}
-              <span className="font-bold">
-                {profile.role === "admin" ? "Amministratore" : "Cliente"}
-              </span>
-            </div>
-            <div className="flex gap-4 mt-6 flex-wrap">
-              <a
-                href="/cliente"
-                className="bg-gray-100 border border-gray-200 px-4 py-2 rounded-md shadow-sm hover:bg-gray-200 transition text-sm"
-              >
-                Area Cliente
-              </a>
-              {profile.role === "admin" && (
-                <a
-                  href="/admin"
-                  className="bg-[#b43434] text-white px-4 py-2 rounded-md shadow hover:bg-[#932a2a] transition text-sm"
-                >
-                  Area Admin
-                </a>
-              )}
-              <button
-                className="bg-white text-[#b43434] border border-[#b43434] px-4 py-2 rounded-md shadow-sm hover:bg-[#f8e4e3] transition text-sm"
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  window.location.reload();
-                }}
-              >
-                Logout
-              </button>
-            </div>
+        </section>
+
+        {/* Contatti */}
+        <section ref={contattiRef} className="w-full max-w-4xl mx-auto py-16 px-4 flex flex-col items-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#b43434] mb-6 text-center">Contatti</h2>
+          <div className="bg-white rounded-xl shadow-lg border p-8 w-full flex flex-col items-center">
+            <div className="text-lg font-semibold mb-2">FerramentaPro Srl</div>
+            <div className="text-gray-800 text-base">Via Utensili 10, Udine</div>
+            <div className="text-gray-800 text-base">Email: <a href="mailto:info@ferramentapro.it" className="underline text-[#b43434]">info@ferramentapro.it</a></div>
+            <div className="text-gray-800 text-base">Tel: 0432 000000</div>
+            <div className="mt-4 text-sm text-gray-400">Powered by Lovable</div>
           </div>
-        )}
-        <hr className="my-8" />
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Best seller prodotti */}
-          {[
-            { title: "Trapano Bosch", desc: "Potente e compatto.", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" },
-            { title: "Martello Stanley", desc: "Resistente per ogni lavoro.", img: "https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=400&q=80" },
-            { title: "Set cacciaviti Wera", desc: "Affidabilità garantita.", img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" },
-          ].map((p) => (
-            <div key={p.title} className="rounded-lg shadow-sm border bg-[#faf9f7] hover-scale transition">
-              <img src={p.img} className="w-full h-36 object-cover rounded-t-lg" alt="" />
-              <div className="p-3">
-                <div className="font-bold text-[#b43434] mb-1">{p.title}</div>
-                <div className="text-gray-500 text-sm">{p.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-10 text-center text-gray-500 text-sm">
-          <b>Via Utensili 10, Udine</b> &middot; <b>info@ferramentapro.it</b><br />
-          <span className="text-[11px] text-gray-400">Powered by Lovable</span>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }
