@@ -43,6 +43,7 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
+    // Controllo solo i campi obbligatori (numero telefono è opzionale)
     if (!nome || !cognome || !email || !password || !nomeUtente) {
       setError("Compila tutti i campi obbligatori");
       setLoading(false);
@@ -58,7 +59,7 @@ export default function AuthPage() {
           data: {
             nome,
             cognome,
-            numero_telefono: numeroTelefono,
+            numero_telefono: numeroTelefono || null, // Se vuoto, passa null
             nome_utente: nomeUtente,
           }
         }
