@@ -1,7 +1,8 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Auth from "./pages/Auth";
+import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home";
-import ClienteArea from "./pages/ClienteArea";
+import ClienteAreaNew from "./pages/ClienteAreaNew";
 import AdminArea from "./pages/AdminArea";
 
 const App = () => {
@@ -9,8 +10,8 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/cliente" element={<ClienteArea />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/cliente" element={<ClienteAreaNew />} />
         <Route path="/admin" element={<AdminArea />} />
         <Route path="*" element={<Home />} />
       </Routes>

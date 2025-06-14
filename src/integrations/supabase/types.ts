@@ -30,6 +30,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          cognome: string
+          created_at: string | null
+          email: string
+          id: string
+          nome: string
+          nome_utente: string
+          numero_telefono: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cognome: string
+          created_at?: string | null
+          email: string
+          id: string
+          nome: string
+          nome_utente: string
+          numero_telefono?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cognome?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          nome?: string
+          nome_utente?: string
+          numero_telefono?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
