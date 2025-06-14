@@ -9,17 +9,18 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   body {
-    /* Texture cemento e sfumatura calda */
     @apply bg-sabbia font-lato text-antracite;
+    /* Effetto parallax - sfondo fisso */
     background-image:
-      linear-gradient(144deg, #F4F1EA 50%, #a9a9a960 100%),
+      linear-gradient(135deg, #F4F1EA 0%, #7B8B6F15 40%, #8B5E3C08 100%),
       url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1400&q=50');
-    background-size: cover, 1800px;
-    background-position: center, top;
-    background-repeat: repeat, no-repeat;
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: scroll, fixed; /* L'immagine rimane fissa */
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, .font-header {
@@ -27,18 +28,36 @@
   }
 
   .hover-scale {
-    @apply transition-transform duration-150 hover:scale-105;
+    @apply transition-transform duration-200 hover:scale-105;
   }
 
   .animate-fade-in {
     animation: fade-in 0.4s ease forwards;
+  }
+
+  /* Texture overlay leggera per dare profondità */
+  .texture-overlay {
+    position: relative;
+  }
+  
+  .texture-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(169, 169, 169, 0.03) 2px, rgba(169, 169, 169, 0.03) 4px);
+    pointer-events: none;
+    z-index: 1;
   }
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -46,20 +65,33 @@
   }
 }
 
-/* Bottoni in stile rustico moderno */
+/* Stili bottoni rustici */
 .btn-azione {
-  @apply bg-senape text-white px-6 py-2 rounded-[6px] font-oswald tracking-wide shadow hover:bg-ruggine hover-scale transition-all duration-150;
+  @apply bg-senape text-bianco px-6 py-3 rounded-md font-oswald font-medium tracking-wide shadow-md hover:bg-ruggine hover-scale transition-all duration-200;
 }
 
-/* Ombrature e bordo cementato per card */
+.btn-azione:hover {
+  box-shadow: 0 4px 12px rgba(139, 94, 60, 0.3);
+}
+
+/* Card con texture */
 .card-blocco {
-  @apply bg-bianco border border-cemento shadow-cement-shadow rounded-lg p-4;
+  @apply bg-bianco border border-cemento/30 shadow-lg rounded-lg p-6;
+  box-shadow: 
+    0 4px 16px rgba(46, 46, 46, 0.08),
+    0 1px 0 rgba(169, 169, 169, 0.1) inset;
 }
 
-/* Bordo decorativo effetto lamiera */
+/* Bordo effetto lamiera */
 .bordo-lamiera {
   border: 1.5px solid #A9A9A9;
-  box-shadow: 0 2px 8px #7B8B6F10 inset;
-  border-radius: 7px;
+  box-shadow: 
+    0 2px 8px rgba(123, 139, 111, 0.1) inset,
+    0 1px 3px rgba(46, 46, 46, 0.1);
+  border-radius: 6px;
 }
 
+/* Overlay scuro per sezioni con background image */
+.dark-overlay {
+  background: linear-gradient(135deg, rgba(46, 46, 46, 0.7) 0%, rgba(46, 46, 46, 0.5) 100%);
+}
