@@ -6,7 +6,7 @@
 /* Palette e tweak custom */
 @layer base {
   body {
-    @apply bg-gradient-to-br from-cemento via-biancoFerramenta to-brown-100;
+    @apply bg-gradient-to-br from-cemento via-biancoFerramenta to-biancoLegno;
     background-image:
       repeating-linear-gradient(210deg, #ede8dc40 0 20px, transparent 20px 48px), 
       linear-gradient(120deg, #f5f3ef 0%, #cbb18222 70%, #ded9d344 100%);
