@@ -12,12 +12,14 @@
 @layer base {
   body {
     @apply font-lato text-antracite;
-    /* Effetto parallax - sfondo fisso con immagine */
-    background-image: url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1400&q=50');
+    /* Effetto parallax - sfondo fisso con immagine scurita */
+    background-image: 
+      linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(46, 46, 46, 0.6) 100%),
+      url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1400&q=50');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* L'immagine rimane fissa */
+    background-attachment: fixed;
     min-height: 100vh;
   }
 
@@ -26,26 +28,52 @@
   }
 
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .hover-3d {
+    @apply transition-all duration-300 hover:scale-105;
+    transform-style: preserve-3d;
+  }
+
+  .hover-3d:hover {
+    transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) scale(1.05);
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(212, 160, 23, 0.2);
   }
 
   .animate-fade-in {
-    animation: fade-in 0.4s ease forwards;
+    animation: fade-in 0.6s ease forwards;
+  }
+
+  .animate-breathing {
+    animation: breathing 3s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
   }
 
   /* Sezione trasparente - mostra l'immagine di sfondo */
   .section-transparent {
-    background: linear-gradient(135deg, rgba(244, 241, 234, 0.1) 0%, rgba(123, 139, 111, 0.15) 40%, rgba(139, 94, 60, 0.08) 100%);
-    backdrop-filter: blur(0.5px);
+    background: linear-gradient(135deg, rgba(244, 241, 234, 0.05) 0%, rgba(123, 139, 111, 0.1) 40%, rgba(139, 94, 60, 0.05) 100%);
+    backdrop-filter: blur(1px);
   }
 
-  /* Sezione opaca - sfondo bianco/sabbia */
+  /* Sezione opaca - sfondo con glassmorphism */
   .section-opaque {
-    background: linear-gradient(135deg, #F4F1EA 0%, rgba(244, 241, 234, 0.98) 100%);
-    backdrop-filter: none;
+    background: linear-gradient(135deg, rgba(244, 241, 234, 0.95) 0%, rgba(244, 241, 234, 0.98) 100%);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
 
-  /* Texture overlay leggera per dare profondità */
+  /* Texture overlay moderna */
   .texture-overlay {
     position: relative;
   }
@@ -57,8 +85,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
-      repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(169, 169, 169, 0.03) 2px, rgba(169, 169, 169, 0.03) 4px);
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(123, 139, 111, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(212, 160, 23, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(139, 94, 60, 0.1) 0%, transparent 50%);
     pointer-events: none;
     z-index: 1;
   }
@@ -67,7 +97,7 @@
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -75,33 +105,129 @@
   }
 }
 
-/* Stili bottoni rustici */
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(212, 160, 23, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(212, 160, 23, 0.6), 0 0 30px rgba(212, 160, 23, 0.4);
+  }
+}
+
+/* Bottoni moderni con effetti 3D */
 .btn-azione {
-  @apply bg-senape text-bianco px-6 py-3 rounded-md font-oswald font-medium tracking-wide shadow-md hover:bg-ruggine hover-scale transition-all duration-200;
+  @apply bg-gradient-to-r from-senape to-ruggine text-bianco px-6 py-3 rounded-xl font-oswald font-medium tracking-wide shadow-lg hover-3d transition-all duration-300 relative overflow-hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.btn-azione:hover {
-  box-shadow: 0 4px 12px rgba(139, 94, 60, 0.3);
+.btn-azione::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  transition: all 0.6s;
+  opacity: 0;
 }
 
-/* Card con texture */
+.btn-azione:hover::before {
+  animation: shine 0.6s ease-in-out;
+  opacity: 1;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+/* Card moderne con glassmorphism e effetti 3D */
 .card-blocco {
-  @apply bg-bianco border border-cemento/30 shadow-lg rounded-lg p-6;
-  box-shadow: 
-    0 4px 16px rgba(46, 46, 46, 0.08),
-    0 1px 0 rgba(169, 169, 169, 0.1) inset;
+  @apply bg-gradient-to-br from-bianco/95 to-bianco/90 border border-bianco/30 shadow-2xl rounded-2xl p-6 backdrop-blur-md hover-3d relative overflow-hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Bordo effetto lamiera */
+.card-blocco::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+}
+
+.card-blocco::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(123, 139, 111, 0.3), transparent);
+}
+
+.card-prodotto {
+  @apply bg-gradient-to-br from-bianco/98 to-bianco/95 backdrop-blur-lg border border-bianco/40 shadow-2xl rounded-2xl overflow-hidden hover-3d transition-all duration-300 relative;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-prodotto:hover {
+  transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) scale(1.05);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.25),
+    0 0 30px rgba(212, 160, 23, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Effetti per le icone */
+.icon-glow {
+  filter: drop-shadow(0 0 8px currentColor);
+  transition: all 0.3s ease;
+}
+
+.icon-glow:hover {
+  filter: drop-shadow(0 0 12px currentColor);
+  transform: scale(1.1);
+}
+
+/* Bordo moderno con effetto neon */
 .bordo-lamiera {
-  border: 1.5px solid #A9A9A9;
+  border: 2px solid rgba(212, 160, 23, 0.3);
   box-shadow: 
-    0 2px 8px rgba(123, 139, 111, 0.1) inset,
-    0 1px 3px rgba(46, 46, 46, 0.1);
-  border-radius: 6px;
+    0 0 20px rgba(212, 160, 23, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
 }
 
-/* Overlay scuro per sezioni con background image */
+/* Overlay con effetti moderni */
 .dark-overlay {
-  background: linear-gradient(135deg, rgba(46, 46, 46, 0.7) 0%, rgba(46, 46, 46, 0.5) 100%);
+  background: linear-gradient(135deg, rgba(46, 46, 46, 0.6) 0%, rgba(46, 46, 46, 0.4) 100%);
+  backdrop-filter: blur(2px);
 }
