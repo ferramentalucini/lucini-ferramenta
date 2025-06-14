@@ -1,9 +1,11 @@
 
 import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Home, Mail, Phone, AtSign } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { User, LogOut, Home, Mail, Phone, AtSign, AlertTriangle } from "lucide-react";
 
 type UserProfile = {
   nome: string;
@@ -15,20 +17,42 @@ type UserProfile = {
 };
 
 export default function ClienteAreaNew() {
+  const { userId } = useParams();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEmailVerified, setIsEmailVerified] = useState(true);
+  const [daysToVerification, setDaysToVerification] = useState(30);
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [userId]);
 
   const checkAuth = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        window.location.replace("/auth");
+        navigate("/auth");
         return;
+      }
+
+      // Verifica che l'utente possa accedere a questa pagina (deve essere il suo profilo)
+      if (session.user.id !== userId) {
+        navigate(`/cliente/${session.user.id}`);
+        return;
+      }
+
+      // Controlla se l'email è verificata
+      setIsEmailVerified(!!session.user.email_confirmed_at);
+
+      // Calcola i giorni rimanenti per la verifica (se l'email non è verificata)
+      if (!session.user.email_confirmed_at && session.user.created_at) {
+        const createdAt = new Date(session.user.created_at);
+        const now = new Date();
+        const daysPassed = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.max(0, 30 - daysPassed);
+        setDaysToVerification(daysRemaining);
       }
 
       // Carica il profilo utente
@@ -46,7 +70,7 @@ export default function ClienteAreaNew() {
       setProfile(userProfile);
     } catch (error) {
       console.error("Errore autenticazione:", error);
-      window.location.replace("/auth");
+      navigate("/auth");
     } finally {
       setLoading(false);
     }
@@ -54,7 +78,27 @@ export default function ClienteAreaNew() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.replace("/");
+    navigate("/");
+  };
+
+  const resendVerificationEmail = async () => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: profile?.email || '',
+        options: {
+          emailRedirectTo: `${window.location.origin}/cliente/${userId}`
+        }
+      });
+      
+      if (error) {
+        console.error("Errore invio email:", error);
+      } else {
+        alert("Email di verifica inviata!");
+      }
+    } catch (error) {
+      console.error("Errore:", error);
+    }
   };
 
   if (loading) {
@@ -72,7 +116,7 @@ export default function ClienteAreaNew() {
           <CardContent className="pt-6">
             <p className="text-center text-red-600">Errore nel caricamento del profilo</p>
             <Button 
-              onClick={() => window.location.replace("/auth")} 
+              onClick={() => navigate("/auth")} 
               className="w-full mt-4"
             >
               Torna al login
@@ -95,13 +139,14 @@ export default function ClienteAreaNew() {
                 Area Cliente
               </h1>
               <p className="text-cemento">Benvenuto nella tua area personale</p>
+              <p className="text-xs text-gray-500">ID: {userId}</p>
             </div>
           </div>
           
           <div className="flex gap-3">
             <Button 
               variant="outline" 
-              onClick={() => window.location.replace("/")}
+              onClick={() => navigate("/")}
               className="flex items-center gap-2"
             >
               <Home size={18} />
@@ -117,6 +162,24 @@ export default function ClienteAreaNew() {
             </Button>
           </div>
         </div>
+
+        {/* Alert per email non verificata */}
+        {!isEmailVerified && (
+          <Alert className="mb-6 border-orange-200 bg-orange-50">
+            <AlertTriangle className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <strong>Email non verificata!</strong> Hai ancora <strong>{daysToVerification} giorni</strong> per verificare la tua email, 
+              altrimenti il tuo account verrà chiuso. 
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-orange-600 underline ml-1"
+                onClick={resendVerificationEmail}
+              >
+                Clicca qui per inviare nuovamente l'email di verifica
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Benvenuto */}
         <Card className="mb-8 bg-white/95 backdrop-blur-sm shadow-xl border-0">
@@ -169,7 +232,9 @@ export default function ClienteAreaNew() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <Mail size={18} className="text-senape" />
                 <div>
-                  <p className="font-medium text-antracite">Email</p>
+                  <p className="font-medium text-antracite">
+                    Email {!isEmailVerified && <span className="text-orange-600 text-xs">(non verificata)</span>}
+                  </p>
                   <p className="text-cemento">{profile.email}</p>
                 </div>
               </div>
