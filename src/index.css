@@ -167,8 +167,9 @@
 
 /* Card moderne con glassmorphism e effetti 3D */
 .card-blocco {
-  @apply bg-gradient-to-br from-bianco/95 to-bianco/90 border border-bianco/30 shadow-2xl rounded-2xl p-6 backdrop-blur-md hover-3d relative overflow-hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.90) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  @apply shadow-2xl rounded-2xl p-6 backdrop-blur-md hover-3d relative overflow-hidden;
 }
 
 .card-blocco::before {
@@ -192,8 +193,9 @@
 }
 
 .card-prodotto {
-  @apply bg-gradient-to-br from-bianco/98 to-bianco/95 backdrop-blur-lg border border-bianco/40 shadow-2xl rounded-2xl overflow-hidden hover-3d transition-all duration-300 relative;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  @apply backdrop-blur-lg shadow-2xl rounded-2xl overflow-hidden hover-3d transition-all duration-300 relative;
 }
 
 .card-prodotto:hover {
