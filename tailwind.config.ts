@@ -20,29 +20,29 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				playfair: ['"Playfair Display"', "serif"],
-				sans: ['Inter', "sans-serif"],
+				oswald: ['Oswald', 'sans-serif'],
+				lato: ['Lato', 'sans-serif'],
+				merriweather: ['Merriweather', 'serif'],
 			},
 			colors: {
-				oro: "#bfa046",
-				rame: "#a1643b",
-				acciaio: "#868b91", // acciaio vero, più azzurrino/blu
-				cemento: "#ded9d3",
-				noce: "#85775c",
-				legno: "#cbb182", // marrone chiaro/legno naturale
-				verdeFerramenta: "#60766b", // verde industriale
-				verdeMuschio: "#95a68a", // verde chiaro, muschio
-				grigioFerro: "#6e7275", // new: ferro
-				bluPetrolio: "#506670", // blu-grigio industriale
-				scuroMetallo: "#55585c",
-				biancoFerramenta: "#f5f3ef",
-				biancoLegno: "#ede8dc",
-				ombra: "#d1b46d44",
+				// palette principale
+				sabbia: "#F4F1EA",
+				verdesalvia: "#7B8B6F",
+				ruggine: "#8B5E3C",
+				cemento: "#A9A9A9",
+				antracite: "#2E2E2E",
+				senape: "#D4A017",
+				bianco: "#fff"
 			},
-      boxShadow: {
-        'deep-gold': '0 5px 25px -4px #bfa04644, 0 1.5px 0px #e5e7eb inset',
-        'rustic-card': '0 2px 12px -2px #85775c25, 0 1px 0 #eadbbb inset',
-      }
+			boxShadow: {
+				'rustic-card': '0 2px 14px -2px #2E2E2E14, 0 1px 0 #ded9d3 inset',
+				'cement-shadow': '0 1.5px 14px -4px #A9A9A944, 0 1px 0 #cccccc inset',
+			},
+			backgroundImage: {
+				// texture cemento/parete realistica
+				'cemento-texture': "url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1000&q=30')",
+				'mattone-texture': "url('https://images.unsplash.com/photo-1520880867055-1e30d1cb001c?auto=format&fit=crop&w=1000&q=40')",
+			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
