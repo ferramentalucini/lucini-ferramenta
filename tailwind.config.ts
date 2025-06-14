@@ -26,13 +26,17 @@ export default {
 			colors: {
 				oro: "#bfa046",
 				rame: "#a1643b",
-				acciaio: "#8e939b",
+				acciaio: "#868b91", // acciaio vero, più azzurrino/blu
 				cemento: "#ded9d3",
 				noce: "#85775c",
-				verdeFerramenta: "#60766b",
+				legno: "#cbb182", // marrone chiaro/legno naturale
+				verdeFerramenta: "#60766b", // verde industriale
+				verdeMuschio: "#95a68a", // verde chiaro, muschio
+				grigioFerro: "#6e7275", // new: ferro
+				bluPetrolio: "#506670", // blu-grigio industriale
 				scuroMetallo: "#55585c",
-				// i colori chiari restano per background
 				biancoFerramenta: "#f5f3ef",
+				biancoLegno: "#ede8dc",
 				ombra: "#d1b46d44",
 			},
       boxShadow: {

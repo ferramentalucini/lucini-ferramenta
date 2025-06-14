@@ -12,7 +12,7 @@ const servizi = [
     icon: ShieldCheck,
     title: "Prodotti robusti",
     desc: "Solo marchi affidabili, scelti per resistere a lungo.",
-    tone: "oro",
+    tone: "acciaio",
   },
   {
     icon: Percent,
@@ -24,13 +24,13 @@ const servizi = [
     icon: Handshake,
     title: "Consulenza sincera",
     desc: "Ti aiutiamo a scegliere davvero quello che serve.",
-    tone: "noce",
+    tone: "legno",
   },
 ];
 
 export default function ServiziFerramenta() {
   return (
-    <section className="bg-cemento w-full py-10 border-b border-cemento">
+    <section className="bg-gradient-to-br from-biancoLegno via-cemento to-legno w-full py-10 border-b border-cemento">
       <div className="max-w-6xl mx-auto px-5 grid md:grid-cols-4 grid-cols-1 gap-6">
         {servizi.map((s) => (
           <div
@@ -41,7 +41,7 @@ export default function ServiziFerramenta() {
             <div className={`font-semibold text-${s.tone} mb-1 text-lg font-playfair`}>
               {s.title}
             </div>
-            <div className="text-scuroMetallo text-sm font-light">{s.desc}</div>
+            <div className="text-grigioFerro text-sm font-light">{s.desc}</div>
           </div>
         ))}
       </div>

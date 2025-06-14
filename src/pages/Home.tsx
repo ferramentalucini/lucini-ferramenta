@@ -1,4 +1,3 @@
-
 import HeroFerramenta from "../components/home/HeroFerramenta";
 import ServiziFerramenta from "../components/home/ServiziFerramenta";
 import ProdottiConsigliati from "../components/home/ProdottiConsigliati";
@@ -20,10 +19,10 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-[#f6f3ed] min-h-screen flex flex-col w-full">
+    <div className="bg-gradient-to-br from-cemento via-biancoLegno to-legno min-h-screen flex flex-col w-full pattern-bg">
       {/* HEADER */}
       <header
-        className="sticky top-0 left-0 z-40 bg-gradient-to-b from-[#fcfaf5] via-[#f8efcd] to-[#f6f3ed]/90 border-b-2 border-[#c9b037] shadow-lg"
+        className="sticky top-0 left-0 z-40 bg-gradient-to-b from-[#e4e0d7] via-[#d4c8a7] to-[#f6f3ed]/80 border-b-2 border-cemento shadow-lg"
       >
         <div className="flex justify-between items-center px-4 md:px-16 py-3">
           <span className="text-3xl md:text-4xl font-playfair font-bold text-[#b08d37] drop-shadow tracking-tight select-none">

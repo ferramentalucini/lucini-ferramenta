@@ -6,7 +6,10 @@
 /* Palette e tweak custom */
 @layer base {
   body {
-    @apply bg-[#f5f5f7];
+    @apply bg-gradient-to-br from-cemento via-biancoFerramenta to-brown-100;
+    background-image:
+      repeating-linear-gradient(210deg, #ede8dc40 0 20px, transparent 20px 48px), 
+      linear-gradient(120deg, #f5f3ef 0%, #cbb18222 70%, #ded9d344 100%);
   }
   .hover-scale {
     @apply transition-transform duration-150 hover:scale-105;
