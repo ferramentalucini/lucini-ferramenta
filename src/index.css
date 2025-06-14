@@ -11,15 +11,13 @@
 
 @layer base {
   body {
-    @apply bg-sabbia font-lato text-antracite;
-    /* Effetto parallax - sfondo fisso */
-    background-image:
-      linear-gradient(135deg, #F4F1EA 0%, #7B8B6F15 40%, #8B5E3C08 100%),
-      url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1400&q=50');
-    background-size: cover, cover;
-    background-position: center, center;
-    background-repeat: no-repeat, no-repeat;
-    background-attachment: scroll, fixed; /* L'immagine rimane fissa */
+    @apply font-lato text-antracite;
+    /* Effetto parallax - sfondo fisso con immagine */
+    background-image: url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1400&q=50');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* L'immagine rimane fissa */
     min-height: 100vh;
   }
 
@@ -33,6 +31,18 @@
 
   .animate-fade-in {
     animation: fade-in 0.4s ease forwards;
+  }
+
+  /* Sezione trasparente - mostra l'immagine di sfondo */
+  .section-transparent {
+    background: linear-gradient(135deg, rgba(244, 241, 234, 0.1) 0%, rgba(123, 139, 111, 0.15) 40%, rgba(139, 94, 60, 0.08) 100%);
+    backdrop-filter: blur(0.5px);
+  }
+
+  /* Sezione opaca - sfondo bianco/sabbia */
+  .section-opaque {
+    background: linear-gradient(135deg, #F4F1EA 0%, rgba(244, 241, 234, 0.98) 100%);
+    backdrop-filter: none;
   }
 
   /* Texture overlay leggera per dare profondità */

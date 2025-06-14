@@ -4,10 +4,10 @@ import { Hammer } from "lucide-react";
 export default function ChiSiamoFerramenta() {
   return (
     <section
-      className="w-full py-12 px-5 bg-mattone-texture bg-cover bg-center border-b border-cemento"
+      className="section-opaque w-full py-12 px-5 border-b border-cemento/30"
       id="chi-siamo"
     >
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8 ">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8">
         <div className="flex-1">
           <h2 className="font-oswald text-2xl md:text-3xl font-bold text-antracite mb-2 flex gap-2 items-center font-header">
             <Hammer size={28} className="text-verdesalvia" />
@@ -29,4 +29,3 @@ export default function ChiSiamoFerramenta() {
     </section>
   );
 }
-

@@ -1,4 +1,3 @@
-
 import { Truck, Hammer, Wrench, ShieldCheck } from "lucide-react";
 
 const servizi = [
@@ -30,7 +29,7 @@ const servizi = [
 
 export default function ServiziFerramenta() {
   return (
-    <section className="bg-sabbia bg-mattone-texture bg-blend-multiply w-full py-10 border-b border-cemento animate-fade-in">
+    <section className="section-opaque w-full py-10 border-b border-cemento/30 animate-fade-in">
       <div className="max-w-6xl mx-auto px-5 grid md:grid-cols-4 grid-cols-1 gap-7">
         {servizi.map((s) => (
           <div

@@ -5,9 +5,9 @@ export default function ContattiFerramenta() {
   return (
     <section
       id="contatti"
-      className="w-full py-12 px-5 bg-antracite border-t border-cemento"
+      className="section-transparent w-full py-12 px-5 border-t border-cemento/20"
     >
-      <div className="max-w-2xl mx-auto bg-bianco p-8 rounded-lg card-blocco flex flex-col items-center text-center shadow-lg ">
+      <div className="max-w-2xl mx-auto bg-bianco/95 backdrop-blur-sm p-8 rounded-lg card-blocco flex flex-col items-center text-center shadow-lg">
         <h2 className="font-oswald text-xl md:text-2xl font-bold text-verdesalvia mb-2 font-header flex items-center gap-2">
           <Hammer size={21} className="text-ruggine" />
           Contattaci
@@ -35,4 +35,3 @@ export default function ContattiFerramenta() {
     </section>
   );
 }
-

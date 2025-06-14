@@ -1,4 +1,3 @@
-
 import { ShoppingCart, Hammer, Wrench } from "lucide-react";
 
 const prodotti = [
@@ -46,16 +45,16 @@ const prodotti = [
 
 export default function ProdottiConsigliati() {
   return (
-    <section id="prodotti" className="bg-sabbia bg-cemento-texture bg-blend-multiply w-full py-14 px-5 border-b border-cemento">
+    <section id="prodotti" className="section-transparent w-full py-14 px-5 border-b border-cemento/20">
       <div className="max-w-6xl mx-auto flex flex-col items-start">
-        <h2 className="font-oswald text-2xl md:text-3xl font-bold text-verdesalvia mb-3 pl-1 font-header">
+        <h2 className="font-oswald text-2xl md:text-3xl font-bold text-bianco mb-3 pl-1 font-header drop-shadow-lg">
           I nostri prodotti best-seller
         </h2>
         <div className="grid md:grid-cols-5 sm:grid-cols-2 grid-cols-1 gap-6 w-full">
           {prodotti.map((p) => (
             <div
               key={p.nome}
-              className={`relative rounded-lg bg-bianco border ${p.colore} card-blocco group transition flex flex-col overflow-hidden hover:shadow-lg`}
+              className={`relative rounded-lg bg-bianco/95 backdrop-blur-sm border ${p.colore} card-blocco group transition flex flex-col overflow-hidden hover:shadow-lg`}
             >
               <img
                 src={p.img}
@@ -80,7 +79,7 @@ export default function ProdottiConsigliati() {
         <div className="flex justify-end w-full mt-9">
           <a
             href="/prodotti"
-            className="inline-flex items-center gap-2 bg-sabbia border-2 border-senape text-verdesalvia text-base font-oswald px-7 py-2 rounded-md shadow hover:bg-senape hover:text-sabbia transition hover-scale"
+            className="inline-flex items-center gap-2 bg-bianco/90 backdrop-blur-sm border-2 border-senape text-verdesalvia text-base font-oswald px-7 py-2 rounded-md shadow hover:bg-senape hover:text-sabbia transition hover-scale"
             style={{ letterSpacing: "0.5px" }}
           >
             <ShoppingCart size={19} className="stroke-verdesalvia group-hover:stroke-sabbia" />

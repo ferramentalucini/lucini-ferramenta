@@ -19,9 +19,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col w-full bg-sabbia font-lato">
+    <div className="min-h-screen flex flex-col w-full font-lato">
       {/* HEADER */}
-      <header className="sticky top-0 left-0 z-40 bg-antracite border-b-2 border-cemento shadow-lg">
+      <header className="sticky top-0 left-0 z-40 bg-antracite/95 backdrop-blur-sm border-b-2 border-cemento shadow-lg">
         <div className="flex justify-between items-center px-4 md:px-16 py-3">
           <span className="text-3xl md:text-4xl font-oswald font-bold text-senape tracking-tight select-none drop-shadow font-header">
             Ferramenta Lucini
@@ -56,7 +56,6 @@ export default function Home() {
       </header>
 
       {/* CONTENUTO */}
-      {/* wrapper per scroll */}
       <main className="flex-1 w-full">
         <div ref={inizioRef}><HeroFerramenta /></div>
         <ServiziFerramenta />
@@ -64,7 +63,7 @@ export default function Home() {
         <div ref={chiSiamoRef}><ChiSiamoFerramenta /></div>
         <div ref={contattiRef}><ContattiFerramenta /></div>
       </main>
-      <footer className="bg-antracite text-sabbia py-4 text-center font-oswald text-sm tracking-wide">
+      <footer className="bg-antracite/95 backdrop-blur-sm text-sabbia py-4 text-center font-oswald text-sm tracking-wide">
         &copy; {new Date().getFullYear()} Ferramenta Lucini &mdash; Designed with cura
       </footer>
     </div>
