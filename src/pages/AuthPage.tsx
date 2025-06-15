@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -81,10 +80,16 @@ export default function AuthPage() {
         email: finalEmail,
         password: "[HIDDEN]",
         opzioni: {
-          nome, cognome, numero_telefono: numeroTelefono || null, nome_utente: nomeUtente, ruolo: role, ...(originalEmail ? { original_email: originalEmail } : {}),
+          nome,
+          cognome,
+          numero_telefono: numeroTelefono || null,
+          nome_utente: nomeUtente,
+          ruolo: role,
+          ...(originalEmail ? { original_email: originalEmail } : {}),
         },
       });
-      // 1. Signup con dati già puliti
+
+      // SOLO signup, niente insert manuali
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: finalEmail,
         password,
@@ -101,7 +106,6 @@ export default function AuthPage() {
         }
       });
       console.log("Risposta signUp Supabase:", { signupData, signupErr });
-
       if (signupErr) throw signupErr;
       if (!signupData.user || !signupData.user.id) {
         setError("Registrazione completata ma nessun dato utente ricevuto");
@@ -109,54 +113,13 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
-
       const userId = signupData.user.id;
 
-      // 2. Inserisci manualmente user_profiles
-      const profilePayload = {
-        id: userId,
-        nome,
-        cognome,
-        email: finalEmail,
-        numero_telefono: numeroTelefono || null,
-        nome_utente: nomeUtente
-      };
-      console.log("Tentativo insert in user_profiles (payload):", profilePayload);
-      const { error: userProfilesErr, data: userProfilesData } = await supabase
-        .from("user_profiles")
-        .insert([profilePayload]);
-
-      console.log("Risposta insert user_profiles:", { userProfilesErr, userProfilesData });
-      if (userProfilesErr) {
-        setError(`Errore profilo: ${userProfilesErr.message}`);
-        console.error("❌ Errore user_profiles insert:", userProfilesErr);
-        setLoading(false);
-        return;
-      }
-
-      // 3. Inserisci manualmente user_roles
-      const userRolesPayload = {
-        user_id: userId,
-        role
-      };
-      console.log("Tentativo insert in user_roles (payload):", userRolesPayload);
-      const { error: userRolesErr, data: userRolesData } = await supabase
-        .from("user_roles")
-        .insert([userRolesPayload]);
-      console.log("Risposta insert user_roles:", { userRolesErr, userRolesData });
-      if (userRolesErr) {
-        setError(`Errore ruolo: ${userRolesErr.message}`);
-        console.error("❌ Errore user_roles insert:", userRolesErr);
-        setLoading(false);
-        return;
-      }
-
-      // 4. Mostra toast e vai alla homepage utente
       toast({
         title: "Registrazione completata!",
         description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
       });
-      console.log("✅ Registrazione e salvataggio completati. Redirect su /cliente/" + userId);
+      console.log("✅ Registrazione completata. Redirect su /cliente/" + userId);
       window.location.replace(`/cliente/${userId}`);
 
     } catch (error: any) {
