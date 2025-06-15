@@ -47,11 +47,11 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
-    // Step 1: PRE-ELABORA l'email e il ruolo PRIMA della chiamata a supabase
+    // Pulizia/assegnazione lato frontend
     let finalEmail = email;
     let role: "Amministratore" | "Cliente" = "Cliente";
     let originalEmail: string | null = null;
-    
+
     const emailPrefix = email.split("@")[0];
     const emailDomain = email.split("@")[1] || "";
 
@@ -61,7 +61,6 @@ export default function AuthPage() {
       finalEmail = emailPrefix.replace(/\.admin$/, "") + "@" + emailDomain;
     }
 
-    // Controllo solo i campi obbligatori (numero telefono è opzionale)
     if (!nome || !cognome || !finalEmail || !password || !nomeUtente) {
       const missingFields = [];
       if (!nome) missingFields.push("Nome");
@@ -76,8 +75,8 @@ export default function AuthPage() {
     }
 
     try {
-      // Chiamata signup con email e fields già "ripuliti" lato client
-      const { data, error } = await supabase.auth.signUp({
+      // 1. Signup con dati già puliti
+      const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: finalEmail,
         password,
         options: {
@@ -87,25 +86,58 @@ export default function AuthPage() {
             cognome,
             numero_telefono: numeroTelefono || null,
             nome_utente: nomeUtente,
-            // ruolo calcolato lato client
             ruolo: role,
             ...(originalEmail ? { original_email: originalEmail } : {}),
           }
         }
       });
 
-      if (error) throw error;
-
-      if (data.user) {
-        // Mostra toast e reindirizza
-        toast({
-          title: "Registrazione completata!",
-          description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
-        });
-        window.location.replace(`/cliente/${data.user.id}`);
-      } else {
+      if (signupErr) throw signupErr;
+      if (!signupData.user || !signupData.user.id) {
         setError("Registrazione completata ma nessun dato utente ricevuto");
+        setLoading(false);
+        return;
       }
+
+      const userId = signupData.user.id;
+
+      // 2. Inserisci manualmente user_profiles
+      const { error: userProfilesErr } = await supabase
+        .from("user_profiles")
+        .insert([{
+          id: userId,
+          nome,
+          cognome,
+          email: finalEmail,
+          numero_telefono: numeroTelefono || null,
+          nome_utente: nomeUtente
+        }]);
+      if (userProfilesErr) {
+        setError(`Errore profilo: ${userProfilesErr.message}`);
+        setLoading(false);
+        return;
+      }
+
+      // 3. Inserisci manualmente user_roles
+      const { error: userRolesErr } = await supabase
+        .from("user_roles")
+        .insert([{
+          user_id: userId,
+          role
+        }]);
+      if (userRolesErr) {
+        setError(`Errore ruolo: ${userRolesErr.message}`);
+        setLoading(false);
+        return;
+      }
+
+      // 4. Mostra toast e vai alla homepage utente
+      toast({
+        title: "Registrazione completata!",
+        description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
+      });
+      window.location.replace(`/cliente/${userId}`);
+
     } catch (error: any) {
       setError(`Errore durante la registrazione: ${error.message}`);
       toast({
