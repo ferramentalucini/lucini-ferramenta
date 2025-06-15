@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -75,6 +76,14 @@ export default function AuthPage() {
     }
 
     try {
+      console.log("=== REGISTRAZIONE INIZIATA ===");
+      console.log("Dati inviati per signUp:", {
+        email: finalEmail,
+        password: "[HIDDEN]",
+        opzioni: {
+          nome, cognome, numero_telefono: numeroTelefono || null, nome_utente: nomeUtente, ruolo: role, ...(originalEmail ? { original_email: originalEmail } : {}),
+        },
+      });
       // 1. Signup con dati già puliti
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: finalEmail,
@@ -91,10 +100,12 @@ export default function AuthPage() {
           }
         }
       });
+      console.log("Risposta signUp Supabase:", { signupData, signupErr });
 
       if (signupErr) throw signupErr;
       if (!signupData.user || !signupData.user.id) {
         setError("Registrazione completata ma nessun dato utente ricevuto");
+        console.error("❌ Registrazione: utente mancante in signupData!", signupData);
         setLoading(false);
         return;
       }
@@ -102,31 +113,40 @@ export default function AuthPage() {
       const userId = signupData.user.id;
 
       // 2. Inserisci manualmente user_profiles
-      const { error: userProfilesErr } = await supabase
+      const profilePayload = {
+        id: userId,
+        nome,
+        cognome,
+        email: finalEmail,
+        numero_telefono: numeroTelefono || null,
+        nome_utente: nomeUtente
+      };
+      console.log("Tentativo insert in user_profiles (payload):", profilePayload);
+      const { error: userProfilesErr, data: userProfilesData } = await supabase
         .from("user_profiles")
-        .insert([{
-          id: userId,
-          nome,
-          cognome,
-          email: finalEmail,
-          numero_telefono: numeroTelefono || null,
-          nome_utente: nomeUtente
-        }]);
+        .insert([profilePayload]);
+
+      console.log("Risposta insert user_profiles:", { userProfilesErr, userProfilesData });
       if (userProfilesErr) {
         setError(`Errore profilo: ${userProfilesErr.message}`);
+        console.error("❌ Errore user_profiles insert:", userProfilesErr);
         setLoading(false);
         return;
       }
 
       // 3. Inserisci manualmente user_roles
-      const { error: userRolesErr } = await supabase
+      const userRolesPayload = {
+        user_id: userId,
+        role
+      };
+      console.log("Tentativo insert in user_roles (payload):", userRolesPayload);
+      const { error: userRolesErr, data: userRolesData } = await supabase
         .from("user_roles")
-        .insert([{
-          user_id: userId,
-          role
-        }]);
+        .insert([userRolesPayload]);
+      console.log("Risposta insert user_roles:", { userRolesErr, userRolesData });
       if (userRolesErr) {
         setError(`Errore ruolo: ${userRolesErr.message}`);
+        console.error("❌ Errore user_roles insert:", userRolesErr);
         setLoading(false);
         return;
       }
@@ -136,6 +156,7 @@ export default function AuthPage() {
         title: "Registrazione completata!",
         description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
       });
+      console.log("✅ Registrazione e salvataggio completati. Redirect su /cliente/" + userId);
       window.location.replace(`/cliente/${userId}`);
 
     } catch (error: any) {
@@ -145,6 +166,7 @@ export default function AuthPage() {
         description: error.message,
         variant: "destructive",
       });
+      console.error("❌ Errore try/catch generale registrazione:", error);
     }
 
     setLoading(false);
@@ -184,13 +206,17 @@ export default function AuthPage() {
           });
         } else {
           console.log("👤 Login con nome utente");
-          const { data: profile } = await supabase
+          const { data: profile, error: profileErr } = await supabase
             .from("user_profiles")
             .select("email")
             .eq("nome_utente", loginIdentifier)
             .single();
           
-          if (!profile) throw new Error("Nome utente non trovato");
+          if (profileErr) {
+            throw new Error("Nome utente non trovato (" + profileErr.message + ")");
+          }
+          if (!profile || !profile.email) throw new Error("Nome utente non trovato (nessuna email).");
+          console.log("Nome utente trovato con email:", profile.email);
           
           signInData = await supabase.auth.signInWithPassword({
             email: profile.email,
@@ -199,6 +225,7 @@ export default function AuthPage() {
         }
       }
 
+      console.log("Risposta login:", signInData);
       if (signInData.error) throw signInData.error;
       
       if (signInData.data.user) {
