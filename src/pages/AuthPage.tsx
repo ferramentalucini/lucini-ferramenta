@@ -47,25 +47,12 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
-    // Pulizia/assegnazione lato frontend
-    let finalEmail = email;
-    let role: "Amministratore" | "Cliente" = "Cliente";
-    let originalEmail: string | null = null;
-
-    const emailPrefix = email.split("@")[0];
-    const emailDomain = email.split("@")[1] || "";
-
-    if (emailPrefix.endsWith(".admin")) {
-      role = "Amministratore";
-      originalEmail = email;
-      finalEmail = emailPrefix.replace(/\.admin$/, "") + "@" + emailDomain;
-    }
-
-    if (!nome || !cognome || !finalEmail || !password || !nomeUtente) {
+    // Validazione campi base (tolto ogni logica ruoli/email admin)
+    if (!nome || !cognome || !email || !password || !nomeUtente) {
       const missingFields = [];
       if (!nome) missingFields.push("Nome");
       if (!cognome) missingFields.push("Cognome");
-      if (!finalEmail) missingFields.push("Email");
+      if (!email) missingFields.push("Email");
       if (!password) missingFields.push("Password");
       if (!nomeUtente) missingFields.push("Nome utente");
       const errorMsg = `Campi mancanti: ${missingFields.join(", ")}`;
@@ -75,23 +62,9 @@ export default function AuthPage() {
     }
 
     try {
-      console.log("=== REGISTRAZIONE INIZIATA ===");
-      console.log("Dati inviati per signUp:", {
-        email: finalEmail,
-        password: "[HIDDEN]",
-        opzioni: {
-          nome,
-          cognome,
-          numero_telefono: numeroTelefono || null,
-          nome_utente: nomeUtente,
-          ruolo: role,
-          ...(originalEmail ? { original_email: originalEmail } : {}),
-        },
-      });
-
-      // SOLO signup: NESSUN INSERT MANUALE user_profiles/user_roles
+      // Solo signup semplice, nessun ruolo gestito lato frontend
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
-        email: finalEmail,
+        email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/cliente`,
@@ -100,16 +73,12 @@ export default function AuthPage() {
             cognome,
             numero_telefono: numeroTelefono || null,
             nome_utente: nomeUtente,
-            ruolo: role,
-            ...(originalEmail ? { original_email: originalEmail } : {}),
           }
         }
       });
-      console.log("Risposta signUp Supabase:", { signupData, signupErr });
       if (signupErr) throw signupErr;
       if (!signupData.user || !signupData.user.id) {
         setError("Registrazione completata ma nessun dato utente ricevuto");
-        console.error("❌ Registrazione: utente mancante in signupData!", signupData);
         setLoading(false);
         return;
       }
@@ -119,7 +88,6 @@ export default function AuthPage() {
         title: "Registrazione completata!",
         description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
       });
-      console.log("✅ Registrazione completata. Redirect su /cliente/" + userId);
       window.location.replace(`/cliente/${userId}`);
 
     } catch (error: any) {
@@ -129,7 +97,6 @@ export default function AuthPage() {
         description: error.message,
         variant: "destructive",
       });
-      console.error("❌ Errore try/catch generale registrazione:", error);
     }
 
     setLoading(false);

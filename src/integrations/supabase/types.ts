@@ -9,30 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      role_permissions: {
-        Row: {
-          granted: boolean
-          id: string
-          permission: Database["public"]["Enums"]["permission_type"]
-          requires_approval: boolean
-          role: Database["public"]["Enums"]["user_role"]
-        }
-        Insert: {
-          granted?: boolean
-          id?: string
-          permission: Database["public"]["Enums"]["permission_type"]
-          requires_approval?: boolean
-          role: Database["public"]["Enums"]["user_role"]
-        }
-        Update: {
-          granted?: boolean
-          id?: string
-          permission?: Database["public"]["Enums"]["permission_type"]
-          requires_approval?: boolean
-          role?: Database["public"]["Enums"]["user_role"]
-        }
-        Relationships: []
-      }
       user_profiles: {
         Row: {
           cognome: string
@@ -66,56 +42,15 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      user_has_permission: {
-        Args: {
-          user_id: string
-          permission_name: Database["public"]["Enums"]["permission_type"]
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      permission_type:
-        | "visualizzare_prodotti"
-        | "gestire_prodotti"
-        | "pubblicare_modifiche"
-        | "modificare_permessi"
-        | "chat_clienti"
-        | "chat_staff"
-      user_role:
-        | "Cliente"
-        | "Moderato"
-        | "Amministratore"
-        | "Super Amministratore"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -230,21 +165,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      permission_type: [
-        "visualizzare_prodotti",
-        "gestire_prodotti",
-        "pubblicare_modifiche",
-        "modificare_permessi",
-        "chat_clienti",
-        "chat_staff",
-      ],
-      user_role: [
-        "Cliente",
-        "Moderato",
-        "Amministratore",
-        "Super Amministratore",
-      ],
-    },
+    Enums: {},
   },
 } as const

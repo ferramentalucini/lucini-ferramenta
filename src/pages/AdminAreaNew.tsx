@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,14 +76,6 @@ export default function AdminAreaNew() {
     window.location.replace("/");
   };
 
-  // Verifica se l'utente ha permessi admin
-  useEffect(() => {
-    if (role && !isAdmin()) {
-      // Se non è admin, reindirizza all'area cliente
-      window.location.replace(`/cliente/${userId}`);
-    }
-  }, [role, userId]);
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sabbia to-cemento/20">
@@ -162,9 +153,6 @@ export default function AdminAreaNew() {
               Benvenuto, {profile.nome} {profile.cognome}!
             </CardTitle>
             <CardDescription className="text-lg flex items-center gap-2">
-              <span className="bg-ruggine text-white px-2 py-1 rounded text-sm font-medium">
-                {role}
-              </span>
               Accesso al pannello amministrativo
             </CardDescription>
           </CardHeader>

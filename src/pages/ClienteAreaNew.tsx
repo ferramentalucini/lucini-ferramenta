@@ -126,19 +126,6 @@ export default function ClienteAreaNew() {
               <Home size={18} />
               Home
             </Button>
-            
-            {/* Mostra pulsante Admin solo se l'utente è amministratore */}
-            {isAdmin() && (
-              <Button 
-                variant="outline" 
-                onClick={() => window.location.replace(`/admin/${userId}`)}
-                className="flex items-center gap-2"
-              >
-                <Shield size={18} />
-                Admin
-              </Button>
-            )}
-            
             <Button 
               variant="destructive" 
               onClick={handleLogout}
@@ -158,11 +145,6 @@ export default function ClienteAreaNew() {
             </CardTitle>
             <CardDescription className="text-lg flex items-center gap-2">
               È un piacere averti nella famiglia Ferramenta Lucini
-              {role && (
-                <span className="bg-senape text-antracite px-2 py-1 rounded text-sm font-medium ml-2">
-                  {role}
-                </span>
-              )}
             </CardDescription>
           </CardHeader>
         </Card>

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -6,7 +5,6 @@ type UserProfile = { id: string, email: string, nome: string, cognome: string, n
 
 export default function ClienteArea() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,34 +13,23 @@ export default function ClienteArea() {
         window.location.replace("/auth");
         return;
       }
-      // Recupera il profilo completo
       const { data: prof } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", session.user.id)
         .maybeSingle();
-      // Recupera ruolo
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
 
       setProfile(prof);
-      setRole(userRole?.role ?? null);
       setLoading(false);
     });
-    // update on login/logout
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         setProfile(null);
-        setRole(null);
         return;
       }
       supabase.auth.getSession().then(async ({ data: { session } }) => {
         if (!session) {
           setProfile(null);
-          setRole(null);
           setLoading(false);
           return;
         }
@@ -51,13 +38,7 @@ export default function ClienteArea() {
           .select("*")
           .eq("id", session.user.id)
           .maybeSingle();
-        const { data: userRole } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
         setProfile(prof);
-        setRole(userRole?.role ?? null);
         setLoading(false);
       });
     });

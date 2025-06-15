@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -6,7 +5,6 @@ type UserProfile = { id: string, email: string, nome: string, cognome: string, n
 
 export default function AdminArea() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,24 +13,14 @@ export default function AdminArea() {
         window.location.replace("/auth");
         return;
       }
-      // Recupera il profilo completo
+      // Recupera il profilo completo senza controllo ruolo
       const { data: prof } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", session.user.id)
         .maybeSingle();
-      // Recupera ruolo
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      if (!userRole || userRole.role !== "Amministratore") {
-        window.location.replace("/");
-        return;
-      }
+
       setProfile(prof);
-      setRole(userRole.role);
       setLoading(false);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -50,7 +38,7 @@ export default function AdminArea() {
         <div className="mb-2 text-sm text-gray-500">Area Amministratore</div>
         <div className="mb-4 text-xl font-bold text-[#b43434]">{profile.email}</div>
         <div className="mb-6 text-gray-800">
-          Benvenuto, amministratore. Qui potrai gestire prodotti e ordini (funzionalità prossimamente).
+          Benvenuto! Qui potrai gestire prodotti e ordini (funzionalità prossimamente).
         </div>
         <div className="mt-6 flex justify-between">
           <a href="/" className="text-[#b43434] underline">Home</a>
