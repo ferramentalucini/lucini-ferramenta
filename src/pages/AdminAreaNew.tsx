@@ -1,10 +1,11 @@
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, Home, Mail, Phone, AtSign, Shield, Settings } from "lucide-react";
-import { useUserRole, UserRole } from "@/hooks/useUserRole";
+import { useUserRole } from "@/hooks/useUserRole";
 
 type UserProfile = {
   nome: string;
