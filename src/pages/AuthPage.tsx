@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -48,33 +47,38 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
-    console.log("🔄 Inizio registrazione utente");
-    console.log("📧 Email:", email);
-    console.log("👤 Nome:", nome, "Cognome:", cognome);
-    console.log("📱 Telefono:", numeroTelefono);
-    console.log("🏷️ Nome utente:", nomeUtente);
+    // Step 1: PRE-ELABORA l'email e il ruolo PRIMA della chiamata a supabase
+    let finalEmail = email;
+    let role: "Amministratore" | "Cliente" = "Cliente";
+    let originalEmail: string | null = null;
+    
+    const emailPrefix = email.split("@")[0];
+    const emailDomain = email.split("@")[1] || "";
+
+    if (emailPrefix.endsWith(".admin")) {
+      role = "Amministratore";
+      originalEmail = email;
+      finalEmail = emailPrefix.replace(/\.admin$/, "") + "@" + emailDomain;
+    }
 
     // Controllo solo i campi obbligatori (numero telefono è opzionale)
-    if (!nome || !cognome || !email || !password || !nomeUtente) {
+    if (!nome || !cognome || !finalEmail || !password || !nomeUtente) {
       const missingFields = [];
       if (!nome) missingFields.push("Nome");
       if (!cognome) missingFields.push("Cognome");
-      if (!email) missingFields.push("Email");
+      if (!finalEmail) missingFields.push("Email");
       if (!password) missingFields.push("Password");
       if (!nomeUtente) missingFields.push("Nome utente");
-      
       const errorMsg = `Campi mancanti: ${missingFields.join(", ")}`;
-      console.error("❌ Errore validazione:", errorMsg);
       setError(errorMsg);
       setLoading(false);
       return;
     }
 
     try {
-      console.log("🚀 Chiamata a supabase.auth.signUp...");
-      
-      const signUpData = {
-        email,
+      // Chiamata signup con email e fields già "ripuliti" lato client
+      const { data, error } = await supabase.auth.signUp({
+        email: finalEmail,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/cliente`,
@@ -83,89 +87,34 @@ export default function AuthPage() {
             cognome,
             numero_telefono: numeroTelefono || null,
             nome_utente: nomeUtente,
+            // ruolo calcolato lato client
+            ruolo: role,
+            ...(originalEmail ? { original_email: originalEmail } : {}),
           }
         }
-      };
-      
-      console.log("📦 Dati inviati a Supabase:", JSON.stringify(signUpData, null, 2));
-      
-      const { data, error } = await supabase.auth.signUp(signUpData);
+      });
 
-      console.log("📨 Risposta da Supabase:");
-      console.log("✅ Data:", data);
-      if (error) {
-        console.error("❌ Error:", error);
-      }
+      if (error) throw error;
 
-      if (error) {
-        console.error("💥 Errore durante signUp:", error.message);
-        throw error;
-      }
-      
       if (data.user) {
-        console.log("🎉 Utente creato con successo:", data.user.id);
-        console.log("📧 Email finale utente:", data.user.email);
-        
-        // Aspettiamo un momento per permettere ai trigger di completare
-        console.log("⏳ Attendiamo completamento trigger...");
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Verifichiamo che il ruolo sia stato assegnato
-        console.log("🔍 Verifica assegnazione ruolo...");
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .single();
-          
-        if (roleError) {
-          console.error("❌ Errore verifica ruolo:", roleError);
-        } else {
-          console.log("✅ Ruolo assegnato:", roleData.role);
-        }
-        
-        // Verifichiamo che il profilo sia stato creato
-        console.log("🔍 Verifica creazione profilo...");
-        const { data: profileData, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (profileError) {
-          console.error("❌ Errore verifica profilo:", profileError);
-        } else {
-          console.log("✅ Profilo creato:", profileData);
-        }
-        
+        // Mostra toast e reindirizza
         toast({
           title: "Registrazione completata!",
           description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
         });
-        
-        console.log("🔄 Reindirizzamento a:", `/cliente/${data.user.id}`);
         window.location.replace(`/cliente/${data.user.id}`);
       } else {
-        console.warn("⚠️ Nessun utente restituito da signUp");
         setError("Registrazione completata ma nessun dato utente ricevuto");
       }
     } catch (error: any) {
-      console.error("💥 Errore catturato:", error);
-      console.error("📝 Dettagli errore:", {
-        message: error.message,
-        code: error.code,
-        status: error.status,
-        details: error.details
-      });
       setError(`Errore durante la registrazione: ${error.message}`);
-      
       toast({
         title: "Errore durante la registrazione",
         description: error.message,
         variant: "destructive",
       });
     }
-    
+
     setLoading(false);
   };
 
