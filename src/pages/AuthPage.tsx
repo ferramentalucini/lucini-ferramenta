@@ -89,7 +89,7 @@ export default function AuthPage() {
         },
       });
 
-      // SOLO signup, niente insert manuali
+      // SOLO signup: NESSUN INSERT MANUALE user_profiles/user_roles
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: finalEmail,
         password,
