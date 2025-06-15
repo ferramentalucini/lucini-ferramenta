@@ -35,14 +35,14 @@ export function useUserRole(user: User | null) {
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Errore nel caricamento ruolo:', error);
         return;
       }
 
-      setRole(data.role as UserRole);
+      setRole(data?.role as UserRole);
     } catch (error) {
       console.error('Errore nel caricamento ruolo:', error);
     } finally {

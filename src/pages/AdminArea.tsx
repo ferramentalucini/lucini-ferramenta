@@ -1,10 +1,12 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-type Profile = { id: string, email: string, role: string };
+type UserProfile = { id: string, email: string, nome: string, cognome: string, nome_utente: string, numero_telefono: string | null };
 
 export default function AdminArea() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,15 +15,28 @@ export default function AdminArea() {
         window.location.replace("/auth");
         return;
       }
-      const { data: prof } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
-      if (prof?.role !== "admin") window.location.replace("/");
+      // Recupera il profilo completo
+      const { data: prof } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      // Recupera ruolo
+      const { data: userRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (!userRole || userRole.role !== "Amministratore") {
+        window.location.replace("/");
+        return;
+      }
       setProfile(prof);
+      setRole(userRole.role);
       setLoading(false);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setProfile(null);
-      }
+      if (!session) setProfile(null);
     });
     return () => listener?.subscription.unsubscribe();
   }, []);
@@ -35,11 +50,15 @@ export default function AdminArea() {
         <div className="mb-2 text-sm text-gray-500">Area Amministratore</div>
         <div className="mb-4 text-xl font-bold text-[#b43434]">{profile.email}</div>
         <div className="mb-6 text-gray-800">
-          {" "}Benvenuto, amministratore. Qui potrai gestire prodotti e ordini (funzionalità prossimamente).
+          Benvenuto, amministratore. Qui potrai gestire prodotti e ordini (funzionalità prossimamente).
         </div>
         <div className="mt-6 flex justify-between">
           <a href="/" className="text-[#b43434] underline">Home</a>
-          <button className="bg-white text-[#b43434] border border-[#b43434] px-4 py-2 rounded hover:bg-[#f8e8e3] transition" onClick={async () => { await supabase.auth.signOut(); window.location.replace("/"); }}>Logout</button>
+          <button
+            className="bg-white text-[#b43434] border border-[#b43434] px-4 py-2 rounded hover:bg-[#f8e8e3] transition"
+            onClick={async () => { await supabase.auth.signOut(); window.location.replace("/"); }}>
+            Logout
+          </button>
         </div>
       </div>
     </div>
