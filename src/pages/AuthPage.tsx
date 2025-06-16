@@ -89,7 +89,12 @@ export default function AuthPage() {
 
       console.log("✅ Utente auth creato:", signupData.user.id);
 
-      // 2. POI: Salva il profilo in user_profiles con il ruolo
+      // 2. POI: Aspetta un momento e poi salva il profilo
+      // Questo permette a Supabase di settare correttamente il contesto auth
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // 3. Usa il service_role per inserire il profilo (temporaneamente)
+      // Oppure forza l'inserimento con l'ID dell'utente appena creato
       const { error: profileErr } = await supabase
         .from("user_profiles")
         .insert({
@@ -104,6 +109,14 @@ export default function AuthPage() {
 
       if (profileErr) {
         console.error("❌ Errore inserimento profilo:", profileErr);
+        
+        // Se fallisce, proviamo a eliminare l'utente auth per evitare inconsistenze
+        try {
+          await supabase.auth.admin.deleteUser(signupData.user.id);
+        } catch (deleteErr) {
+          console.error("❌ Errore eliminazione utente:", deleteErr);
+        }
+        
         throw new Error("Errore nel salvataggio del profilo: " + profileErr.message);
       }
 
