@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -47,7 +48,7 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
-    // Validazione campi base (tolto ogni logica ruoli/email admin)
+    // Validazione campi base
     if (!nome || !cognome || !email || !password || !nomeUtente) {
       const missingFields = [];
       if (!nome) missingFields.push("Nome");
@@ -62,35 +63,53 @@ export default function AuthPage() {
     }
 
     try {
-      // Solo signup semplice, nessun ruolo gestito lato frontend
+      console.log("🔄 Inizio registrazione per:", email);
+
+      // 1. PRIMA: Registra l'utente in auth
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/cliente`,
-          data: {
-            nome,
-            cognome,
-            numero_telefono: numeroTelefono || null,
-            nome_utente: nomeUtente,
-          }
         }
       });
-      if (signupErr) throw signupErr;
-      if (!signupData.user || !signupData.user.id) {
-        setError("Registrazione completata ma nessun dato utente ricevuto");
-        setLoading(false);
-        return;
-      }
-      const userId = signupData.user.id;
 
+      if (signupErr) throw signupErr;
+      if (!signupData.user?.id) {
+        throw new Error("Registrazione fallita: nessun ID utente ricevuto");
+      }
+
+      console.log("✅ Utente auth creato:", signupData.user.id);
+
+      // 2. POI: Salva il profilo in user_profiles MANUALMENTE
+      const { error: profileErr } = await supabase
+        .from("user_profiles")
+        .insert({
+          id: signupData.user.id,
+          email: email,
+          nome: nome,
+          cognome: cognome,
+          nome_utente: nomeUtente,
+          numero_telefono: numeroTelefono || null,
+        });
+
+      if (profileErr) {
+        console.error("❌ Errore inserimento profilo:", profileErr);
+        throw new Error("Errore nel salvataggio del profilo: " + profileErr.message);
+      }
+
+      console.log("✅ Profilo salvato con successo");
+      
       toast({
         title: "Registrazione completata!",
         description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
       });
-      window.location.replace(`/cliente/${userId}`);
+
+      // Reindirizza all'area cliente
+      window.location.replace(`/cliente/${signupData.user.id}`);
 
     } catch (error: any) {
+      console.error("💥 Errore registrazione:", error);
       setError(`Errore durante la registrazione: ${error.message}`);
       toast({
         title: "Errore durante la registrazione",
