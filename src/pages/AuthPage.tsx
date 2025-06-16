@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -65,6 +64,10 @@ export default function AuthPage() {
     try {
       console.log("🔄 Inizio registrazione per:", email);
 
+      // Determina il ruolo basato sull'email
+      const ruolo = email.includes(".admin@") ? "amministratore" : "cliente";
+      console.log("👤 Ruolo assegnato:", ruolo);
+
       // 1. PRIMA: Registra l'utente in auth
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email,
@@ -81,7 +84,7 @@ export default function AuthPage() {
 
       console.log("✅ Utente auth creato:", signupData.user.id);
 
-      // 2. POI: Salva il profilo in user_profiles MANUALMENTE
+      // 2. POI: Salva il profilo in user_profiles con il ruolo
       const { error: profileErr } = await supabase
         .from("user_profiles")
         .insert({
@@ -91,6 +94,7 @@ export default function AuthPage() {
           cognome: cognome,
           nome_utente: nomeUtente,
           numero_telefono: numeroTelefono || null,
+          role: ruolo,
         });
 
       if (profileErr) {
@@ -98,15 +102,16 @@ export default function AuthPage() {
         throw new Error("Errore nel salvataggio del profilo: " + profileErr.message);
       }
 
-      console.log("✅ Profilo salvato con successo");
+      console.log("✅ Profilo salvato con successo con ruolo:", ruolo);
       
       toast({
         title: "Registrazione completata!",
-        description: `Benvenuto ${nome}! Reindirizzamento in corso...`,
+        description: `Benvenuto ${nome}! Ruolo: ${ruolo}. Reindirizzamento in corso...`,
       });
 
-      // Reindirizza all'area cliente
-      window.location.replace(`/cliente/${signupData.user.id}`);
+      // Reindirizza all'area appropriata
+      const redirectPath = ruolo === "amministratore" ? `/admin/${signupData.user.id}` : `/cliente/${signupData.user.id}`;
+      window.location.replace(redirectPath);
 
     } catch (error: any) {
       console.error("💥 Errore registrazione:", error);
