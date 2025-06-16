@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -64,13 +65,17 @@ export default function AuthPage() {
     try {
       console.log("🔄 Inizio registrazione per:", email);
 
-      // Determina il ruolo basato sull'email
+      // Determina il ruolo basato sull'email ORIGINALE
       const ruolo = email.includes(".admin@") ? "amministratore" : "cliente";
       console.log("👤 Ruolo assegnato:", ruolo);
 
-      // 1. PRIMA: Registra l'utente in auth
+      // Processa l'email: rimuove ".admin" se presente
+      const emailPerSupabase = email.replace(".admin@", "@");
+      console.log("📧 Email processata per Supabase:", emailPerSupabase);
+
+      // 1. PRIMA: Registra l'utente in auth con l'email processata
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
-        email,
+        email: emailPerSupabase,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/cliente`,
@@ -89,7 +94,7 @@ export default function AuthPage() {
         .from("user_profiles")
         .insert({
           id: signupData.user.id,
-          email: email,
+          email: emailPerSupabase, // Salva l'email processata
           nome: nome,
           cognome: cognome,
           nome_utente: nomeUtente,
