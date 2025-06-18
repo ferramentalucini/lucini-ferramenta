@@ -1,27 +1,15 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Home, Mail, Phone, AtSign, Shield, Settings } from "lucide-react";
-import { useUserRole } from "@/hooks/useUserRole";
-
-type UserProfile = {
-  nome: string;
-  cognome: string;
-  email: string;
-  numero_telefono: string | null;
-  nome_utente: string;
-  created_at: string;
-};
+import { User, LogOut, Home, Shield, Settings } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminAreaNew() {
   const { userId } = useParams();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const { role, isAdmin } = useUserRole(user);
+  const { user, logout, checkAdminAuth } = useAuth();
 
   useEffect(() => {
     checkAuth();
@@ -29,41 +17,26 @@ export default function AdminAreaNew() {
 
   const checkAuth = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Controlla se è loggato come admin
+      const isAdminAuthenticated = checkAdminAuth();
       
-      if (!session) {
+      if (!isAdminAuthenticated) {
         window.location.replace("/auth");
         return;
       }
 
-      setUser(session.user);
-
-      // Verifica che l'userId nell'URL corrisponda all'utente loggato
-      if (userId && userId !== session.user.id) {
-        console.error("Accesso negato: userId non corrispondente");
-        window.location.replace(`/admin/${session.user.id}`);
+      // Verifica che l'userId nell'URL corrisponda (per admin è sempre admin-user)
+      if (userId && userId !== 'admin-user') {
+        window.location.replace('/admin/admin-user');
         return;
       }
 
       // Se non c'è userId nell'URL, reindirizza con l'ID corretto
       if (!userId) {
-        window.location.replace(`/admin/${session.user.id}`);
+        window.location.replace('/admin/admin-user');
         return;
       }
 
-      // Carica il profilo utente
-      const { data: userProfile, error } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (error) {
-        console.error("Errore nel caricamento profilo:", error);
-        return;
-      }
-
-      setProfile(userProfile);
     } catch (error) {
       console.error("Errore autenticazione:", error);
       window.location.replace("/auth");
@@ -72,9 +45,8 @@ export default function AdminAreaNew() {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.replace("/");
+  const handleLogout = () => {
+    logout();
   };
 
   if (loading) {
@@ -85,17 +57,17 @@ export default function AdminAreaNew() {
     );
   }
 
-  if (!profile || !isAdmin()) {
+  if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sabbia to-cemento/20">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <p className="text-center text-red-600">Accesso negato - Permessi amministratore richiesti</p>
             <Button 
-              onClick={() => window.location.replace(`/cliente/${userId}`)} 
+              onClick={() => window.location.replace("/auth")} 
               className="w-full mt-4"
             >
-              Vai all'area cliente
+              Torna al login
             </Button>
           </CardContent>
         </Card>
@@ -128,14 +100,6 @@ export default function AdminAreaNew() {
               Home
             </Button>
             <Button 
-              variant="outline" 
-              onClick={() => window.location.replace(`/cliente/${userId}`)}
-              className="flex items-center gap-2"
-            >
-              <User size={18} />
-              Area Cliente
-            </Button>
-            <Button 
               variant="destructive" 
               onClick={handleLogout}
               className="flex items-center gap-2"
@@ -151,7 +115,7 @@ export default function AdminAreaNew() {
           <CardHeader className="bg-gradient-to-r from-ruggine/10 to-senape/10">
             <CardTitle className="text-2xl text-antracite font-oswald flex items-center gap-2">
               <Shield size={24} />
-              Benvenuto, {profile.nome} {profile.cognome}!
+              Benvenuto, {user.username}!
             </CardTitle>
             <CardDescription className="text-lg flex items-center gap-2">
               Accesso al pannello amministrativo
@@ -172,16 +136,8 @@ export default function AdminAreaNew() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <User size={18} className="text-ruggine" />
                 <div>
-                  <p className="font-medium text-antracite">Nome completo</p>
-                  <p className="text-cemento">{profile.nome} {profile.cognome}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <AtSign size={18} className="text-ruggine" />
-                <div>
                   <p className="font-medium text-antracite">Nome utente</p>
-                  <p className="text-cemento">@{profile.nome_utente}</p>
+                  <p className="text-cemento">@{user.username}</p>
                 </div>
               </div>
 
@@ -189,7 +145,7 @@ export default function AdminAreaNew() {
                 <Shield size={18} className="text-ruggine" />
                 <div>
                   <p className="font-medium text-antracite">Ruolo</p>
-                  <p className="text-cemento">{role}</p>
+                  <p className="text-cemento">Amministratore</p>
                 </div>
               </div>
             </CardContent>
@@ -198,28 +154,26 @@ export default function AdminAreaNew() {
           <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-antracite">
-                <Mail size={20} />
-                Contatti
+                <Settings size={20} />
+                Stato Sistema
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Mail size={18} className="text-ruggine" />
+              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                 <div>
-                  <p className="font-medium text-antracite">Email</p>
-                  <p className="text-cemento">{profile.email}</p>
+                  <p className="font-medium text-antracite">Sistema</p>
+                  <p className="text-green-600">Online</p>
                 </div>
               </div>
               
-              {profile.numero_telefono && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Phone size={18} className="text-ruggine" />
-                  <div>
-                    <p className="font-medium text-antracite">Telefono</p>
-                    <p className="text-cemento">{profile.numero_telefono}</p>
-                  </div>
+              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <div>
+                  <p className="font-medium text-antracite">Accesso</p>
+                  <p className="text-blue-600">Autenticato</p>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -260,9 +214,9 @@ export default function AdminAreaNew() {
             <CardHeader>
               <CardTitle className="text-antracite flex items-center gap-2">
                 <Shield size={20} />
-                Permessi
+                Configurazione
               </CardTitle>
-              <CardDescription>Gestisci ruoli e permessi</CardDescription>
+              <CardDescription>Impostazioni di sistema</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-cemento text-center py-8">
@@ -270,13 +224,6 @@ export default function AdminAreaNew() {
               </p>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-12 text-center">
-          <p className="text-cemento text-sm">
-            Amministratore dal {new Date(profile.created_at).toLocaleDateString('it-IT')}
-          </p>
         </div>
       </div>
     </div>
