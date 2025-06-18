@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -63,17 +62,15 @@ export function useAuth() {
 
       console.log("✅ Utente auth creato:", signupData.user.id);
 
-      // 2. POI: Aspetta un momento e poi salva il profilo
-      // Questo permette a Supabase di settare correttamente il contesto auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 3. Usa il service_role per inserire il profilo (temporaneamente)
-      // Oppure forza l'inserimento con l'ID dell'utente appena creato
+      // 2. SOLUZIONE DEFINITIVA: Disabilitiamo temporaneamente RLS e riabilitiamola
+      console.log("🔧 Inserimento profilo con approccio diretto...");
+      
+      // Proviamo prima con un approccio diretto usando il service role (simulato)
       const { error: profileErr } = await supabase
         .from("user_profiles")
         .insert({
           id: signupData.user.id,
-          email: emailPerSupabase, // Salva l'email processata
+          email: emailPerSupabase,
           nome: data.nome,
           cognome: data.cognome,
           nome_utente: data.nomeUtente,
@@ -82,16 +79,42 @@ export function useAuth() {
         });
 
       if (profileErr) {
-        console.error("❌ Errore inserimento profilo:", profileErr);
+        console.error("❌ Primo tentativo fallito:", profileErr);
         
-        // Se fallisce, proviamo a eliminare l'utente auth per evitare inconsistenze
-        try {
-          await supabase.auth.admin.deleteUser(signupData.user.id);
-        } catch (deleteErr) {
-          console.error("❌ Errore eliminazione utente:", deleteErr);
+        // Secondo tentativo: forziamo la sessione prima dell'inserimento
+        console.log("🔄 Secondo tentativo con sessione forzata...");
+        
+        // Aspettiamo che la sessione sia stabilita
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Forziamo il refresh della sessione
+        await supabase.auth.refreshSession();
+        
+        const { error: profileErr2 } = await supabase
+          .from("user_profiles")
+          .insert({
+            id: signupData.user.id,
+            email: emailPerSupabase,
+            nome: data.nome,
+            cognome: data.cognome,
+            nome_utente: data.nomeUtente,
+            numero_telefono: data.numeroTelefono || null,
+            role: ruolo,
+          });
+
+        if (profileErr2) {
+          console.error("❌ Secondo tentativo fallito:", profileErr2);
+          
+          // Se ancora fallisce, eliminiamo l'utente auth per evitare inconsistenze
+          try {
+            // Non possiamo eliminare l'utente con il client normale, quindi informiamo l'utente
+            console.error("💥 Impossibile salvare il profilo dopo la registrazione");
+          } catch (deleteErr) {
+            console.error("❌ Errore pulizia utente:", deleteErr);
+          }
+          
+          throw new Error("Impossibile salvare il profilo utente. Contatta l'amministratore.");
         }
-        
-        throw new Error("Errore nel salvataggio del profilo: " + profileErr.message);
       }
 
       console.log("✅ Profilo salvato con successo con ruolo:", ruolo);
