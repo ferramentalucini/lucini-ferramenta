@@ -1,30 +1,17 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogIn, UserPlus, ArrowLeft } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import AuthHeader from "@/components/auth/AuthHeader";
+import LoginForm from "@/components/auth/LoginForm";
+import RegisterForm from "@/components/auth/RegisterForm";
+import { useAuth } from "@/hooks/useAuth";
 
 type AuthMode = "login" | "register";
-type LoginMethod = "email" | "phone";
 
 export default function AuthPage() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>("email");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Form data
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [nome, setNome] = useState("");
-  const [cognome, setCognome] = useState("");
-  const [numeroTelefono, setNumeroTelefono] = useState("");
-  const [nomeUtente, setNomeUtente] = useState("");
-  const [loginIdentifier, setLoginIdentifier] = useState("");
+  const { loading, error, handleRegister, handleLogin, setError } = useAuth();
 
   useEffect(() => {
     // Redirect se già loggato
@@ -43,365 +30,25 @@ export default function AuthPage() {
     return () => listener?.subscription.unsubscribe();
   }, []);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    // Validazione campi base
-    if (!nome || !cognome || !email || !password || !nomeUtente) {
-      const missingFields = [];
-      if (!nome) missingFields.push("Nome");
-      if (!cognome) missingFields.push("Cognome");
-      if (!email) missingFields.push("Email");
-      if (!password) missingFields.push("Password");
-      if (!nomeUtente) missingFields.push("Nome utente");
-      const errorMsg = `Campi mancanti: ${missingFields.join(", ")}`;
-      setError(errorMsg);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      console.log("🔄 Inizio registrazione per:", email);
-
-      // Determina il ruolo basato sull'email ORIGINALE
-      const ruolo = email.includes(".admin@") ? "amministratore" : "cliente";
-      console.log("👤 Ruolo assegnato:", ruolo);
-
-      // Processa l'email: rimuove ".admin" se presente
-      const emailPerSupabase = email.replace(".admin@", "@");
-      console.log("📧 Email processata per Supabase:", emailPerSupabase);
-
-      // 1. PRIMA: Registra l'utente in auth con l'email processata
-      const { data: signupData, error: signupErr } = await supabase.auth.signUp({
-        email: emailPerSupabase,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/cliente`,
-        }
-      });
-
-      if (signupErr) throw signupErr;
-      if (!signupData.user?.id) {
-        throw new Error("Registrazione fallita: nessun ID utente ricevuto");
-      }
-
-      console.log("✅ Utente auth creato:", signupData.user.id);
-
-      // 2. POI: Aspetta un momento e poi salva il profilo
-      // Questo permette a Supabase di settare correttamente il contesto auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 3. Usa il service_role per inserire il profilo (temporaneamente)
-      // Oppure forza l'inserimento con l'ID dell'utente appena creato
-      const { error: profileErr } = await supabase
-        .from("user_profiles")
-        .insert({
-          id: signupData.user.id,
-          email: emailPerSupabase, // Salva l'email processata
-          nome: nome,
-          cognome: cognome,
-          nome_utente: nomeUtente,
-          numero_telefono: numeroTelefono || null,
-          role: ruolo,
-        });
-
-      if (profileErr) {
-        console.error("❌ Errore inserimento profilo:", profileErr);
-        
-        // Se fallisce, proviamo a eliminare l'utente auth per evitare inconsistenze
-        try {
-          await supabase.auth.admin.deleteUser(signupData.user.id);
-        } catch (deleteErr) {
-          console.error("❌ Errore eliminazione utente:", deleteErr);
-        }
-        
-        throw new Error("Errore nel salvataggio del profilo: " + profileErr.message);
-      }
-
-      console.log("✅ Profilo salvato con successo con ruolo:", ruolo);
-      
-      toast({
-        title: "Registrazione completata!",
-        description: `Benvenuto ${nome}! Ruolo: ${ruolo}. Reindirizzamento in corso...`,
-      });
-
-      // Reindirizza all'area appropriata
-      const redirectPath = ruolo === "amministratore" ? `/admin/${signupData.user.id}` : `/cliente/${signupData.user.id}`;
-      window.location.replace(redirectPath);
-
-    } catch (error: any) {
-      console.error("💥 Errore registrazione:", error);
-      setError(`Errore durante la registrazione: ${error.message}`);
-      toast({
-        title: "Errore durante la registrazione",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-
-    setLoading(false);
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    console.log("🔄 Inizio login utente");
-    console.log("🔑 Metodo:", loginMethod);
-    console.log("📧 Identificatore:", loginIdentifier);
-
-    if (!loginIdentifier || !password) {
-      setError("Inserisci le credenziali");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      let signInData;
-      
-      if (loginMethod === "phone") {
-        console.log("📱 Login con telefono");
-        signInData = await supabase.auth.signInWithPassword({
-          phone: loginIdentifier,
-          password,
-        });
-      } else {
-        // Login con email o nome utente
-        if (loginIdentifier.includes("@")) {
-          console.log("📧 Login con email");
-          signInData = await supabase.auth.signInWithPassword({
-            email: loginIdentifier,
-            password,
-          });
-        } else {
-          console.log("👤 Login con nome utente");
-          const { data: profile, error: profileErr } = await supabase
-            .from("user_profiles")
-            .select("email")
-            .eq("nome_utente", loginIdentifier)
-            .single();
-          
-          if (profileErr) {
-            throw new Error("Nome utente non trovato (" + profileErr.message + ")");
-          }
-          if (!profile || !profile.email) throw new Error("Nome utente non trovato (nessuna email).");
-          console.log("Nome utente trovato con email:", profile.email);
-          
-          signInData = await supabase.auth.signInWithPassword({
-            email: profile.email,
-            password,
-          });
-        }
-      }
-
-      console.log("Risposta login:", signInData);
-      if (signInData.error) throw signInData.error;
-      
-      if (signInData.data.user) {
-        console.log("✅ Login completato:", signInData.data.user.id);
-        window.location.replace(`/cliente/${signInData.data.user.id}`);
-      }
-    } catch (error: any) {
-      console.error("💥 Errore login:", error);
-      setError(error.message);
-    }
-    
-    setLoading(false);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sabbia to-cemento/20 px-4">
       <div className="w-full max-w-md">
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
-          <CardHeader className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <a 
-                href="/"
-                className="text-cemento hover:text-antracite transition-colors"
-                title="Torna alla home"
-              >
-                <ArrowLeft size={24} />
-              </a>
-              <h1 className="text-2xl font-oswald font-bold text-antracite tracking-wide">
-                Ferramenta Lucini
-              </h1>
-            </div>
-            <CardTitle className="text-xl text-antracite">
-              {authMode === "login" ? "Accedi al tuo account" : "Crea un nuovo account"}
-            </CardTitle>
-            <CardDescription>
-              {authMode === "login" 
-                ? "Inserisci le tue credenziali per accedere"
-                : "Compila i dati per registrarti"
-              }
-            </CardDescription>
-          </CardHeader>
+          <AuthHeader isLogin={authMode === "login"} />
           
           <CardContent>
             {authMode === "login" ? (
-              <form onSubmit={handleLogin} className="space-y-4">
-                {/* Metodo di login */}
-                <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod("email")}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition ${
-                      loginMethod === "email" 
-                        ? "bg-white text-antracite shadow-sm" 
-                        : "text-gray-600"
-                    }`}
-                  >
-                    Email/Username
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod("phone")}
-                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition ${
-                      loginMethod === "phone" 
-                        ? "bg-white text-antracite shadow-sm" 
-                        : "text-gray-600"
-                    }`}
-                  >
-                    Telefono
-                  </button>
-                </div>
-
-                <div>
-                  <Label htmlFor="loginIdentifier">
-                    {loginMethod === "phone" ? "Numero di telefono" : "Email o Nome utente"}
-                  </Label>
-                  <Input
-                    id="loginIdentifier"
-                    type={loginMethod === "phone" ? "tel" : "text"}
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder={
-                      loginMethod === "phone" 
-                        ? "+39 123 456 7890" 
-                        : "email@esempio.com o nomeutente"
-                    }
-                    required
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-
-                {error && (
-                  <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                    {error}
-                  </div>
-                )}
-
-                <Button 
-                  type="submit" 
-                  className="w-full bg-senape hover:bg-senape/90 text-antracite font-semibold"
-                  disabled={loading}
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  {loading ? "Accesso..." : "Accedi"}
-                </Button>
-              </form>
+              <LoginForm 
+                onLogin={handleLogin}
+                loading={loading}
+                error={error}
+              />
             ) : (
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nome">Nome *</Label>
-                    <Input
-                      id="nome"
-                      value={nome}
-                      onChange={(e) => setNome(e.target.value)}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cognome">Cognome *</Label>
-                    <Input
-                      id="cognome"
-                      value={cognome}
-                      onChange={(e) => setCognome(e.target.value)}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="nomeUtente">Nome utente *</Label>
-                  <Input
-                    id="nomeUtente"
-                    value={nomeUtente}
-                    onChange={(e) => setNomeUtente(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="numeroTelefono">Numero di telefono</Label>
-                  <Input
-                    id="numeroTelefono"
-                    type="tel"
-                    value={numeroTelefono}
-                    onChange={(e) => setNumeroTelefono(e.target.value)}
-                    placeholder="+39 123 456 7890"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="password">Password *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-
-                {error && (
-                  <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                    {error}
-                  </div>
-                )}
-
-                <Button 
-                  type="submit" 
-                  className="w-full bg-senape hover:bg-senape/90 text-antracite font-semibold"
-                  disabled={loading}
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  {loading ? "Registrazione..." : "Registrati"}
-                </Button>
-              </form>
+              <RegisterForm 
+                onRegister={handleRegister}
+                loading={loading}
+                error={error}
+              />
             )}
 
             <div className="mt-6 text-center">
