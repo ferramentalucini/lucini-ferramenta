@@ -11,7 +11,6 @@ import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
-  const [adminUser, setAdminUser] = useState<any>(null);
   const { role, isAdmin } = useUserRole(user);
   
   // Scroll references
@@ -21,18 +20,12 @@ export default function Home() {
   const contattiRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Controllo sessione Supabase
+    // Controllo sessione attuale
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
-    // Controllo sessione admin
-    const adminUserData = localStorage.getItem('admin_user');
-    if (adminUserData) {
-      setAdminUser(JSON.parse(adminUserData));
-    }
-
-    // Listener per cambiamenti di autenticazione Supabase
+    // Listener per cambiamenti di autenticazione
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -47,8 +40,6 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('admin_user');
-    setAdminUser(null);
     await supabase.auth.signOut();
   };
 
@@ -90,21 +81,20 @@ export default function Home() {
             
             {/* Pulsanti autenticazione */}
             <div className="flex items-center gap-3">
-              {user || adminUser ? (
+              {user ? (
                 <>
-                  {user && (
-                    <a
-                      href={`/cliente/${user.id}`}
-                      className="flex items-center gap-2 px-3 py-2 bg-senape/20 text-senape rounded-lg hover:bg-senape/30 transition font-oswald"
-                    >
-                      <UserIcon size={18} />
-                      <span className="hidden md:inline">Area Cliente</span>
-                    </a>
-                  )}
+                  <a
+                    href={`/cliente/${user.id}`}
+                    className="flex items-center gap-2 px-3 py-2 bg-senape/20 text-senape rounded-lg hover:bg-senape/30 transition font-oswald"
+                  >
+                    <UserIcon size={18} />
+                    <span className="hidden md:inline">Area Cliente</span>
+                  </a>
                   
-                  {adminUser && (
+                  {/* Mostra pulsante Admin solo se l'utente è amministratore */}
+                  {isAdmin() && (
                     <a
-                      href="/admin/admin-user"
+                      href={`/admin/${user.id}`}
                       className="flex items-center gap-2 px-3 py-2 bg-ruggine/20 text-ruggine rounded-lg hover:bg-ruggine/30 transition font-oswald"
                     >
                       <UserIcon size={18} />
