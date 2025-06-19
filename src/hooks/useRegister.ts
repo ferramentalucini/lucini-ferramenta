@@ -131,7 +131,7 @@ export function useRegister() {
         } catch (deleteErr) {
           console.error("❌ Errore eliminazione utente:", deleteErr);
         }
-        throw new Error("Errore nel salvataggio del profilo dopo 5 tentativi: " + lastError?.message);
+        throw new Error("Errore nel salvataggio del profilo dopo 5 tentativi: " + (lastError?.message || "Errore sconosciuto"));
       }
 
       console.log("🎉 Registrazione completata con successo!");
@@ -148,10 +148,11 @@ export function useRegister() {
 
     } catch (error: any) {
       console.error("💥 Errore registrazione:", error);
-      setError(`Errore durante la registrazione: ${error.message}`);
+      const errorMessage = error.message || "Errore sconosciuto durante la registrazione";
+      setError(`Errore durante la registrazione: ${errorMessage}`);
       toast({
         title: "Errore durante la registrazione",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
