@@ -68,7 +68,7 @@ export function useRegister() {
       // FASE 3: Salvataggio nel profilo con Service Role (bypassa RLS)
       console.log("💾 FASE 3: Salvataggio profilo...");
       let profileSaved = false;
-      let lastError = null;
+      let lastError: any = null;
 
       for (let attempt = 1; attempt <= 5; attempt++) {
         console.log(`💾 Tentativo salvataggio ${attempt}/5`);
@@ -131,7 +131,8 @@ export function useRegister() {
         } catch (deleteErr) {
           console.error("❌ Errore eliminazione utente:", deleteErr);
         }
-        throw new Error("Errore nel salvataggio del profilo dopo 5 tentativi: " + (lastError?.message || "Errore sconosciuto"));
+        const errorMsg = "Errore nel salvataggio del profilo dopo 5 tentativi: " + (lastError?.message || "Errore sconosciuto");
+        throw new Error(errorMsg);
       }
 
       console.log("🎉 Registrazione completata con successo!");
@@ -148,7 +149,7 @@ export function useRegister() {
 
     } catch (error: any) {
       console.error("💥 Errore registrazione:", error);
-      const errorMessage = error.message || "Errore sconosciuto durante la registrazione";
+      const errorMessage = error?.message || "Errore sconosciuto durante la registrazione";
       setError(`Errore durante la registrazione: ${errorMessage}`);
       toast({
         title: "Errore durante la registrazione",
