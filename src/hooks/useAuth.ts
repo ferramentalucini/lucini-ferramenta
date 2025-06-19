@@ -14,9 +14,64 @@ interface RegisterFormData {
   password: string;
 }
 
+interface UserData {
+  uid: string;
+  email: string;
+  nome: string;
+  cognome: string;
+  nomeUtente: string;
+  numeroTelefono: string | null;
+  ruolo: string;
+}
+
 export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const cleanAndValidateUserData = (data: any, formData: RegisterFormData, ruolo: string): UserData | null => {
+    // Pulizia e validazione dei dati
+    const cleanData: UserData = {
+      uid: data.user?.id?.trim() || '',
+      email: data.user?.email?.trim().toLowerCase() || '',
+      nome: formData.nome?.trim() || '',
+      cognome: formData.cognome?.trim() || '',
+      nomeUtente: formData.nomeUtente?.trim() || '',
+      numeroTelefono: formData.numeroTelefono?.trim() || null,
+      ruolo: ruolo
+    };
+
+    // Validazione campi obbligatori
+    if (!cleanData.uid || !cleanData.email || !cleanData.nome || !cleanData.cognome || !cleanData.nomeUtente) {
+      return null;
+    }
+
+    return cleanData;
+  };
+
+  const attemptDataRetrieval = async (maxAttempts: number = 5): Promise<any> => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(`🔄 Tentativo ${attempt}/${maxAttempts} di recupero sessione`);
+      
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.log(`❌ Errore sessione tentativo ${attempt}:`, sessionError);
+        if (attempt === maxAttempts) throw sessionError;
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Backoff progressivo
+        continue;
+      }
+
+      if (sessionData?.session?.user) {
+        console.log(`✅ Dati recuperati al tentativo ${attempt}`);
+        return sessionData;
+      }
+
+      console.log(`⏳ Tentativo ${attempt} fallito, riprovo...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
+
+    throw new Error("Impossibile recuperare i dati dell'utente dopo 5 tentativi");
+  };
 
   const handleRegister = async (data: RegisterFormData) => {
     setLoading(true);
@@ -47,7 +102,8 @@ export function useAuth() {
       const emailPerSupabase = data.email.replace(".admin@", "@");
       console.log("📧 Email processata per Supabase:", emailPerSupabase);
 
-      // 1. PRIMA: Registra l'utente in auth con l'email processata
+      // FASE 1: Registra l'utente in auth
+      console.log("📝 FASE 1: Registrazione utente in auth...");
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: emailPerSupabase,
         password: data.password,
@@ -63,47 +119,91 @@ export function useAuth() {
 
       console.log("✅ Utente auth creato:", signupData.user.id);
 
-      // 2. POI: Aspetta un momento e poi salva il profilo
-      // Questo permette a Supabase di settare correttamente il contesto auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // FASE 2: Recupero dati con retry (sistema streaming)
+      console.log("📊 FASE 2: Recupero dati con sistema retry...");
+      let sessionData;
+      try {
+        sessionData = await attemptDataRetrieval(5);
+      } catch (error: any) {
+        console.error("❌ Fallimento nel recupero dati:", error);
+        // Cleanup: elimina l'utente auth se non riusciamo a recuperar ei dati
+        try {
+          await supabase.auth.admin.deleteUser(signupData.user.id);
+        } catch (deleteErr) {
+          console.error("❌ Errore eliminazione utente:", deleteErr);
+        }
+        throw new Error("Errore nel recupero dati utente: " + error.message);
+      }
 
-      // 3. Usa il service_role per inserire il profilo (temporaneamente)
-      // Oppure forza l'inserimento con l'ID dell'utente appena creato
-      const { error: profileErr } = await supabase
-        .from("user_profiles")
-        .insert({
-          id: signupData.user.id,
-          email: emailPerSupabase, // Salva l'email processata
-          nome: data.nome,
-          cognome: data.cognome,
-          nome_utente: data.nomeUtente,
-          numero_telefono: data.numeroTelefono || null,
-          role: ruolo,
-        });
+      // FASE 3: Pulizia e validazione dati
+      console.log("🧹 FASE 3: Pulizia e validazione dati...");
+      const cleanedData = cleanAndValidateUserData(sessionData, data, ruolo);
+      
+      if (!cleanedData) {
+        throw new Error("Dati utente incompleti dopo la pulizia");
+      }
 
-      if (profileErr) {
-        console.error("❌ Errore inserimento profilo:", profileErr);
+      console.log("✅ Dati puliti e validati:", cleanedData);
+
+      // FASE 4: Salvataggio nel profilo con retry
+      console.log("💾 FASE 4: Salvataggio profilo...");
+      let profileSaved = false;
+      let lastError = null;
+
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        console.log(`💾 Tentativo salvataggio ${attempt}/5`);
         
-        // Se fallisce, proviamo a eliminare l'utente auth per evitare inconsistenze
+        const { error: profileErr } = await supabase
+          .from("user_profiles")
+          .insert({
+            id: cleanedData.uid,
+            email: cleanedData.email,
+            nome: cleanedData.nome,
+            cognome: cleanedData.cognome,
+            nome_utente: cleanedData.nomeUtente,
+            numero_telefono: cleanedData.numeroTelefono,
+            role: cleanedData.ruolo,
+          });
+
+        if (!profileErr) {
+          profileSaved = true;
+          console.log(`✅ Profilo salvato al tentativo ${attempt}`);
+          break;
+        }
+
+        lastError = profileErr;
+        console.error(`❌ Errore salvataggio tentativo ${attempt}:`, profileErr);
+        
+        if (attempt < 5) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+
+      if (!profileSaved) {
+        console.error("❌ Fallimento definitivo salvataggio profilo:", lastError);
+        
+        // Cleanup: elimina l'utente auth
         try {
           await supabase.auth.admin.deleteUser(signupData.user.id);
         } catch (deleteErr) {
           console.error("❌ Errore eliminazione utente:", deleteErr);
         }
         
-        throw new Error("Errore nel salvataggio del profilo: " + profileErr.message);
+        throw new Error("Errore nel salvataggio del profilo dopo 5 tentativi: " + lastError?.message);
       }
 
-      console.log("✅ Profilo salvato con successo con ruolo:", ruolo);
+      console.log("🎉 Registrazione completata con successo!");
       
       toast({
         title: "Registrazione completata!",
-        description: `Benvenuto ${data.nome}! Ruolo: ${ruolo}. Reindirizzamento in corso...`,
+        description: `Benvenuto ${cleanedData.nome}! Ruolo: ${cleanedData.ruolo}`,
       });
 
-      // Reindirizza all'area appropriata
-      const redirectPath = ruolo === "amministratore" ? `/admin/${signupData.user.id}` : `/cliente/${signupData.user.id}`;
-      window.location.replace(redirectPath);
+      // Redirect all'area appropriata
+      const redirectPath = cleanedData.ruolo === "amministratore" ? `/admin/${cleanedData.uid}` : `/cliente/${cleanedData.uid}`;
+      setTimeout(() => {
+        window.location.replace(redirectPath);
+      }, 1000);
 
     } catch (error: any) {
       console.error("💥 Errore registrazione:", error);
