@@ -38,7 +38,7 @@ export function useRegister() {
       const emailPerSupabase = processEmailForSupabase(data.email);
       console.log("📧 Email processata per Supabase:", emailPerSupabase);
 
-      // FASE 1: Registra l'utente in auth
+      // FASE 1: Registra l'utente in auth (SENZA autoConfirm)
       console.log("📝 FASE 1: Registrazione utente in auth...");
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: emailPerSupabase,
@@ -55,61 +55,34 @@ export function useRegister() {
 
       console.log("✅ Utente auth creato con UID:", signupData.user.id);
 
-      // FASE 2: Pulizia e validazione dati usando UID e dati del form
+      // FASE 2: Pulizia e validazione dati usando UID dal form
       console.log("🧹 FASE 2: Preparazione dati profilo...");
       const cleanedData = cleanAndValidateUserData(signupData.user.id, data, ruolo);
       
       if (!cleanedData) {
-        // Cleanup: elimina l'utente auth se i dati non sono validi
-        try {
-          await supabase.auth.admin.deleteUser(signupData.user.id);
-        } catch (deleteErr) {
-          console.error("❌ Errore eliminazione utente:", deleteErr);
-        }
         throw new Error("Dati utente non validi dopo la pulizia");
       }
 
       console.log("✅ Dati preparati:", cleanedData);
 
-      // FASE 3: Autenticazione per permettere l'inserimento RLS
-      console.log("🔐 FASE 3: Autenticazione per RLS...");
-      const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: emailPerSupabase,
-        password: data.password,
-      });
-
-      if (loginError) {
-        console.error("❌ Errore login per RLS:", loginError);
-        // Cleanup: elimina l'utente auth
-        try {
-          await supabase.auth.admin.deleteUser(signupData.user.id);
-        } catch (deleteErr) {
-          console.error("❌ Errore eliminazione utente:", deleteErr);  
-        }
-        throw loginError;
-      }
-
-      console.log("✅ Utente autenticato per RLS");
-
-      // FASE 4: Salvataggio nel profilo con retry
-      console.log("💾 FASE 4: Salvataggio profilo...");
+      // FASE 3: Salvataggio nel profilo con Service Role (bypassa RLS)
+      console.log("💾 FASE 3: Salvataggio profilo...");
       let profileSaved = false;
       let lastError = null;
 
       for (let attempt = 1; attempt <= 5; attempt++) {
         console.log(`💾 Tentativo salvataggio ${attempt}/5`);
         
-        const { error: profileErr } = await supabase
-          .from("user_profiles")
-          .insert({
-            id: cleanedData.uid,
-            email: cleanedData.email,
-            nome: cleanedData.nome,
-            cognome: cleanedData.cognome,
-            nome_utente: cleanedData.nomeUtente,
-            numero_telefono: cleanedData.numeroTelefono,
-            role: cleanedData.ruolo,
-          });
+        // Utilizziamo rpc per inserire con privilegi elevati
+        const { error: profileErr } = await supabase.rpc('insert_user_profile', {
+          p_id: cleanedData.uid,
+          p_email: cleanedData.email,
+          p_nome: cleanedData.nome,
+          p_cognome: cleanedData.cognome,
+          p_nome_utente: cleanedData.nomeUtente,
+          p_numero_telefono: cleanedData.numeroTelefono,
+          p_role: cleanedData.ruolo,
+        });
 
         if (!profileErr) {
           profileSaved = true;
@@ -120,6 +93,30 @@ export function useRegister() {
         lastError = profileErr;
         console.error(`❌ Errore salvataggio tentativo ${attempt}:`, profileErr);
         
+        // Se la funzione RPC non esiste, proviamo l'inserimento diretto
+        if (profileErr.message?.includes('function') || profileErr.message?.includes('does not exist')) {
+          console.log("⚠️ Funzione RPC non trovata, provo inserimento diretto...");
+          
+          const { error: directInsertErr } = await supabase
+            .from("user_profiles")
+            .insert({
+              id: cleanedData.uid,
+              email: cleanedData.email,
+              nome: cleanedData.nome,
+              cognome: cleanedData.cognome,
+              nome_utente: cleanedData.nomeUtente,
+              numero_telefono: cleanedData.numeroTelefono,
+              role: cleanedData.ruolo,
+            });
+
+          if (!directInsertErr) {
+            profileSaved = true;
+            console.log(`✅ Profilo salvato con inserimento diretto al tentativo ${attempt}`);
+            break;
+          }
+          lastError = directInsertErr;
+        }
+        
         if (attempt < 5) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
@@ -127,6 +124,13 @@ export function useRegister() {
 
       if (!profileSaved) {
         console.error("❌ Fallimento definitivo salvataggio profilo:", lastError);
+        // Pulizia: elimina l'utente auth se il profilo non è stato salvato
+        try {
+          await supabase.auth.admin.deleteUser(signupData.user.id);
+          console.log("🧹 Utente auth eliminato dopo fallimento salvataggio profilo");
+        } catch (deleteErr) {
+          console.error("❌ Errore eliminazione utente:", deleteErr);
+        }
         throw new Error("Errore nel salvataggio del profilo dopo 5 tentativi: " + lastError?.message);
       }
 
@@ -134,14 +138,13 @@ export function useRegister() {
       
       toast({
         title: "Registrazione completata!",
-        description: `Benvenuto ${cleanedData.nome}! Ruolo: ${cleanedData.ruolo}`,
+        description: `Benvenuto ${cleanedData.nome}! Ora puoi effettuare il login. Ricorda di confermare la tua email entro 30 giorni.`,
       });
 
-      // Redirect all'area appropriata
-      const redirectPath = cleanedData.ruolo === "amministratore" ? `/admin/${cleanedData.uid}` : `/cliente/${cleanedData.uid}`;
+      // Reindirizza alla pagina di login invece che fare login automatico
       setTimeout(() => {
-        window.location.replace(redirectPath);
-      }, 1000);
+        window.location.replace("/auth");
+      }, 2000);
 
     } catch (error: any) {
       console.error("💥 Errore registrazione:", error);

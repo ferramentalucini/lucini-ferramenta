@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Home, Mail, Phone, AtSign, Shield } from "lucide-react";
+import { User, LogOut, Home, Mail, Phone, AtSign } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import EmailConfirmationAlert from "@/components/auth/EmailConfirmationAlert";
 
 type UserProfile = {
   nome: string;
@@ -136,6 +137,9 @@ export default function ClienteAreaNew() {
             </Button>
           </div>
         </div>
+
+        {/* Email Confirmation Alert */}
+        {userId && <EmailConfirmationAlert userId={userId} />}
 
         {/* Benvenuto */}
         <Card className="mb-8 bg-white/95 backdrop-blur-sm shadow-xl border-0">
