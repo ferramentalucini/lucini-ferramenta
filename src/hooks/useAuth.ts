@@ -28,14 +28,14 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const cleanAndValidateUserData = (data: any, formData: RegisterFormData, ruolo: string): UserData | null => {
-    // Pulizia e validazione dei dati
+  const cleanAndValidateUserData = (uid: string, formData: RegisterFormData, ruolo: string): UserData | null => {
+    // Pulizia e validazione dei dati dal form
     const cleanData: UserData = {
-      uid: data.user?.id?.trim() || '',
-      email: data.user?.email?.trim().toLowerCase() || '',
-      nome: formData.nome?.trim() || '',
-      cognome: formData.cognome?.trim() || '',
-      nomeUtente: formData.nomeUtente?.trim() || '',
+      uid: uid.trim(),
+      email: formData.email.trim().toLowerCase(),
+      nome: formData.nome.trim(),
+      cognome: formData.cognome.trim(),
+      nomeUtente: formData.nomeUtente.trim(),
       numeroTelefono: formData.numeroTelefono?.trim() || null,
       ruolo: ruolo
     };
@@ -46,31 +46,6 @@ export function useAuth() {
     }
 
     return cleanData;
-  };
-
-  const attemptDataRetrieval = async (maxAttempts: number = 5): Promise<any> => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`🔄 Tentativo ${attempt}/${maxAttempts} di recupero sessione`);
-      
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.log(`❌ Errore sessione tentativo ${attempt}:`, sessionError);
-        if (attempt === maxAttempts) throw sessionError;
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Backoff progressivo
-        continue;
-      }
-
-      if (sessionData?.session?.user) {
-        console.log(`✅ Dati recuperati al tentativo ${attempt}`);
-        return sessionData;
-      }
-
-      console.log(`⏳ Tentativo ${attempt} fallito, riprovo...`);
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-    }
-
-    throw new Error("Impossibile recuperare i dati dell'utente dopo 5 tentativi");
   };
 
   const handleRegister = async (data: RegisterFormData) => {
@@ -117,36 +92,26 @@ export function useAuth() {
         throw new Error("Registrazione fallita: nessun ID utente ricevuto");
       }
 
-      console.log("✅ Utente auth creato:", signupData.user.id);
+      console.log("✅ Utente auth creato con UID:", signupData.user.id);
 
-      // FASE 2: Recupero dati con retry (sistema streaming)
-      console.log("📊 FASE 2: Recupero dati con sistema retry...");
-      let sessionData;
-      try {
-        sessionData = await attemptDataRetrieval(5);
-      } catch (error: any) {
-        console.error("❌ Fallimento nel recupero dati:", error);
-        // Cleanup: elimina l'utente auth se non riusciamo a recuperar ei dati
+      // FASE 2: Pulizia e validazione dati usando UID e dati del form
+      console.log("🧹 FASE 2: Preparazione dati profilo...");
+      const cleanedData = cleanAndValidateUserData(signupData.user.id, data, ruolo);
+      
+      if (!cleanedData) {
+        // Cleanup: elimina l'utente auth se i dati non sono validi
         try {
           await supabase.auth.admin.deleteUser(signupData.user.id);
         } catch (deleteErr) {
           console.error("❌ Errore eliminazione utente:", deleteErr);
         }
-        throw new Error("Errore nel recupero dati utente: " + error.message);
+        throw new Error("Dati utente non validi dopo la pulizia");
       }
 
-      // FASE 3: Pulizia e validazione dati
-      console.log("🧹 FASE 3: Pulizia e validazione dati...");
-      const cleanedData = cleanAndValidateUserData(sessionData, data, ruolo);
-      
-      if (!cleanedData) {
-        throw new Error("Dati utente incompleti dopo la pulizia");
-      }
+      console.log("✅ Dati preparati:", cleanedData);
 
-      console.log("✅ Dati puliti e validati:", cleanedData);
-
-      // FASE 4: Salvataggio nel profilo con retry
-      console.log("💾 FASE 4: Salvataggio profilo...");
+      // FASE 3: Salvataggio nel profilo con retry
+      console.log("💾 FASE 3: Salvataggio profilo...");
       let profileSaved = false;
       let lastError = null;
 
