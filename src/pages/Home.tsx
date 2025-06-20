@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from "react";
 import HeroFerramenta from "../components/home/HeroFerramenta";
 import ServiziFerramenta from "../components/home/ServiziFerramenta";
@@ -11,6 +12,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
   const { role, isAdmin } = useUserRole(user);
   
   // Scroll references
@@ -26,12 +28,20 @@ export default function Home() {
     });
 
     // Listener per cambiamenti di autenticazione
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const newUser = session?.user ?? null;
+      
+      // Se l'utente si è appena loggato, attiva l'animazione
+      if (event === 'SIGNED_IN' && newUser && !user) {
+        setJustLoggedIn(true);
+        setTimeout(() => setJustLoggedIn(false), 3000); // Rimuovi l'animazione dopo 3 secondi
+      }
+      
+      setUser(newUser);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [user]);
 
   const handleScroll = (ref: React.RefObject<HTMLDivElement>) => {
     if (ref.current) {
@@ -82,10 +92,10 @@ export default function Home() {
             {/* Pulsanti autenticazione */}
             <div className="flex items-center gap-3">
               {user ? (
-                <>
+                <div className={`flex items-center gap-3 ${justLoggedIn ? 'animate-scale-in' : ''}`}>
                   <a
                     href={`/cliente/${user.id}`}
-                    className="flex items-center gap-2 px-3 py-2 bg-senape/20 text-senape rounded-lg hover:bg-senape/30 transition font-oswald"
+                    className="flex items-center gap-2 px-3 py-2 bg-senape/20 text-senape rounded-lg hover:bg-senape/30 transition font-oswald animate-fade-in"
                   >
                     <UserIcon size={18} />
                     <span className="hidden md:inline">Area Cliente</span>
@@ -95,7 +105,7 @@ export default function Home() {
                   {isAdmin() && (
                     <a
                       href={`/admin/${user.id}`}
-                      className="flex items-center gap-2 px-3 py-2 bg-ruggine/20 text-ruggine rounded-lg hover:bg-ruggine/30 transition font-oswald"
+                      className="flex items-center gap-2 px-3 py-2 bg-ruggine/20 text-ruggine rounded-lg hover:bg-ruggine/30 transition font-oswald animate-fade-in"
                     >
                       <UserIcon size={18} />
                       <span className="hidden md:inline">Admin</span>
@@ -109,7 +119,7 @@ export default function Home() {
                     <LogOut size={18} />
                     <span className="hidden md:inline">Logout</span>
                   </button>
-                </>
+                </div>
               ) : (
                 <a
                   href="/auth"

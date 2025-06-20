@@ -45,32 +45,74 @@ export function useLogin() {
           });
         } else {
           console.log("👤 Login con nome utente");
-          // Cerca l'email associata al nome utente
-          const { data: profiles, error: profileErr } = await supabase
-            .from("user_profiles")
-            .select("email")
-            .eq("nome_utente", loginIdentifier);
+          // Prima prova a cercare per display_name in auth.users
+          const { data: users, error: usersErr } = await supabase.auth.admin.listUsers();
           
-          if (profileErr) {
-            console.error("Errore ricerca profilo:", profileErr);
-            throw new Error("Errore durante la ricerca del nome utente");
+          if (usersErr) {
+            console.error("Errore ricerca utenti:", usersErr);
+            // Fallback: cerca nella tabella user_profiles
+            const { data: profiles, error: profileErr } = await supabase
+              .from("user_profiles")
+              .select("email")
+              .eq("nome_utente", loginIdentifier);
+            
+            if (profileErr) {
+              console.error("Errore ricerca profilo:", profileErr);
+              throw new Error("Errore durante la ricerca del nome utente");
+            }
+            
+            if (!profiles || profiles.length === 0) {
+              throw new Error("Nome utente non trovato");
+            }
+            
+            if (profiles.length > 1) {
+              throw new Error("Errore: nome utente duplicato nel database");
+            }
+            
+            const email = profiles[0].email;
+            console.log("Nome utente trovato con email:", email);
+            
+            signInData = await supabase.auth.signInWithPassword({
+              email: email,
+              password,
+            });
+          } else {
+            // Cerca tra gli utenti auth per display_name
+            const foundUser = users.users.find(user => 
+              user.user_metadata?.display_name === loginIdentifier
+            );
+            
+            if (!foundUser) {
+              // Fallback: cerca nella tabella user_profiles
+              const { data: profiles, error: profileErr } = await supabase
+                .from("user_profiles")
+                .select("email")
+                .eq("nome_utente", loginIdentifier);
+              
+              if (profileErr || !profiles || profiles.length === 0) {
+                throw new Error("Nome utente non trovato");
+              }
+              
+              if (profiles.length > 1) {
+                throw new Error("Errore: nome utente duplicato nel database");
+              }
+              
+              const email = profiles[0].email;
+              console.log("Nome utente trovato con email:", email);
+              
+              signInData = await supabase.auth.signInWithPassword({
+                email: email,
+                password,
+              });
+            } else {
+              console.log("Nome utente trovato con email:", foundUser.email);
+              
+              signInData = await supabase.auth.signInWithPassword({
+                email: foundUser.email!,
+                password,
+              });
+            }
           }
-          
-          if (!profiles || profiles.length === 0) {
-            throw new Error("Nome utente non trovato");
-          }
-          
-          if (profiles.length > 1) {
-            throw new Error("Errore: nome utente duplicato nel database");
-          }
-          
-          const email = profiles[0].email;
-          console.log("Nome utente trovato con email:", email);
-          
-          signInData = await supabase.auth.signInWithPassword({
-            email: email,
-            password,
-          });
         }
       }
 
@@ -89,7 +131,7 @@ export function useLogin() {
       if (errorMessage.includes("Invalid login credentials")) {
         errorMessage = "Credenziali non valide. Verifica email/nome utente e password.";
       } else if (errorMessage.includes("Email not confirmed")) {
-        errorMessage = "Devi confermare la tua email prima di accedere.";
+        errorMessage = "Devi confermare la tua email prima di accedere. Controlla la tua casella di posta.";
       }
       
       setError(errorMessage);

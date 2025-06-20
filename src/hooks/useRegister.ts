@@ -38,21 +38,23 @@ export function useRegister() {
       const emailPerSupabase = processEmailForSupabase(data.email);
       console.log("📧 Email processata per Supabase:", emailPerSupabase);
 
-      // Determina il redirect URL corretto
+      // Determina il redirect URL corretto per la conferma email
       const currentUrl = window.location.origin;
-      const redirectUrl = currentUrl.includes('lovableproject.com') 
-        ? `${currentUrl}/auth` 
-        : `${currentUrl}/auth`;
+      const redirectUrl = `${currentUrl}/email-confirmed`;
       
       console.log("🔗 Redirect URL:", redirectUrl);
 
-      // FASE 1: Registra l'utente in auth (SENZA autoConfirm)
+      // FASE 1: Registra l'utente in auth con display_name
       console.log("📝 FASE 1: Registrazione utente in auth...");
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: emailPerSupabase,
         password: data.password,
         options: {
           emailRedirectTo: redirectUrl,
+          data: {
+            display_name: data.nomeUtente,
+            full_name: `${data.nome} ${data.cognome}`
+          }
         }
       });
 
@@ -65,7 +67,6 @@ export function useRegister() {
 
       // FASE 2: Pulizia e validazione dati usando UID dal form
       console.log("🧹 FASE 2: Preparazione dati profilo...");
-      // Usa l'email pulita per il profilo
       const cleanedData = cleanAndValidateUserData(signupData.user.id, {
         ...data,
         email: emailPerSupabase // Usa l'email già processata
@@ -129,12 +130,12 @@ export function useRegister() {
       
       toast({
         title: "Registrazione completata!",
-        description: `Benvenuto ${cleanedData.nome}! Controlla la tua email per confermare l'account, poi potrai effettuare il login.`,
+        description: `Benvenuto ${cleanedData.nome}! Controlla la tua email per confermare l'account.`,
       });
 
-      // Reindirizza alla pagina di login invece che fare login automatico
+      // Reindirizza alla pagina di attesa conferma email
       setTimeout(() => {
-        window.location.replace("/auth");
+        window.location.replace("/email-confirmation");
       }, 2000);
 
     } catch (error: any) {

@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import ClienteAreaNew from "./pages/ClienteAreaNew";
 import AdminArea from "./pages/AdminArea";
 import AdminAreaNew from "./pages/AdminAreaNew";
+import EmailConfirmationPage from "./pages/EmailConfirmationPage";
+import EmailConfirmedPage from "./pages/EmailConfirmedPage";
 import { Toaster } from "@/components/ui/toaster";
 
 const App = () => {
@@ -13,6 +15,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/email-confirmation" element={<EmailConfirmationPage />} />
+        <Route path="/email-confirmed" element={<EmailConfirmedPage />} />
         <Route path="/cliente" element={<ClienteAreaNew />} />
         <Route path="/cliente/:userId" element={<ClienteAreaNew />} />
         <Route path="/admin" element={<AdminArea />} />
