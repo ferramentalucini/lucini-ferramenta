@@ -38,13 +38,21 @@ export function useRegister() {
       const emailPerSupabase = processEmailForSupabase(data.email);
       console.log("📧 Email processata per Supabase:", emailPerSupabase);
 
+      // Determina il redirect URL corretto
+      const currentUrl = window.location.origin;
+      const redirectUrl = currentUrl.includes('lovableproject.com') 
+        ? `${currentUrl}/auth` 
+        : `${currentUrl}/auth`;
+      
+      console.log("🔗 Redirect URL:", redirectUrl);
+
       // FASE 1: Registra l'utente in auth (SENZA autoConfirm)
       console.log("📝 FASE 1: Registrazione utente in auth...");
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: emailPerSupabase,
         password: data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/cliente`,
+          emailRedirectTo: redirectUrl,
         }
       });
 
@@ -113,7 +121,7 @@ export function useRegister() {
         } catch (deleteErr) {
           console.error("❌ Errore eliminazione utente:", deleteErr);
         }
-        const errorMsg = "Errore nel salvataggio del profilo dopo 5 tentativi: " + (lastError?.message || "Errore sconosciuto");
+        const errorMsg = "Errore nel salvataggio del profilo dopo 5 tentativi: " + (lastError?.message ?? "Errore sconosciuto");
         throw new Error(errorMsg);
       }
 
@@ -121,7 +129,7 @@ export function useRegister() {
       
       toast({
         title: "Registrazione completata!",
-        description: `Benvenuto ${cleanedData.nome}! Ora puoi effettuare il login. Ricorda di confermare la tua email entro 30 giorni.`,
+        description: `Benvenuto ${cleanedData.nome}! Controlla la tua email per confermare l'account, poi potrai effettuare il login.`,
       });
 
       // Reindirizza alla pagina di login invece che fare login automatico
@@ -131,7 +139,7 @@ export function useRegister() {
 
     } catch (error: any) {
       console.error("💥 Errore registrazione:", error);
-      const errorMessage = error?.message || "Errore sconosciuto durante la registrazione";
+      const errorMessage = error?.message ?? "Errore sconosciuto durante la registrazione";
       setError(`Errore durante la registrazione: ${errorMessage}`);
       toast({
         title: "Errore durante la registrazione",
