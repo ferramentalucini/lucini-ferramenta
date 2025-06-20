@@ -46,7 +46,7 @@ export function useLogin() {
         } else {
           console.log("👤 Login con nome utente");
           // Prima prova a cercare per display_name in auth.users
-          const { data: users, error: usersErr } = await supabase.auth.admin.listUsers();
+          const { data: { users }, error: usersErr } = await supabase.auth.admin.listUsers();
           
           if (usersErr) {
             console.error("Errore ricerca utenti:", usersErr);
@@ -78,8 +78,8 @@ export function useLogin() {
             });
           } else {
             // Cerca tra gli utenti auth per display_name
-            const foundUser = users.users.find(user => 
-              user.user_metadata?.display_name === loginIdentifier
+            const foundUser = users.find(user => 
+              user.user_metadata && user.user_metadata.display_name === loginIdentifier
             );
             
             if (!foundUser) {
