@@ -1,235 +1,105 @@
 
-/* ---------------
-	Importare font Oswald e Lato da Google Fonts nel head di index.html:
-	<link href="https://fonts.googleapis.com/css?family=Oswald:400,700&display=swap" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css?family=Lato:400,700&display=swap" rel="stylesheet">
------------------*/
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Oswald:wght@200..700&display=swap');
+@import './styles/animations.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply font-lato text-antracite;
-    /* Effetto parallax - sfondo fisso con immagine scurita */
-    background-image: 
-      linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(46, 46, 46, 0.6) 100%),
-      url('https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1400&q=50');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    min-height: 100vh;
-  }
-
-  h1, h2, h3, h4, .font-header {
-    @apply font-oswald tracking-wide;
-  }
-
-  .hover-scale {
-    @apply transition-transform duration-300 hover:scale-105;
-  }
-
-  .hover-3d {
-    @apply transition-all duration-300 hover:scale-105;
-    transform-style: preserve-3d;
-  }
-
-  .hover-3d:hover {
-    transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) scale(1.05);
-    box-shadow: 
-      0 20px 40px rgba(0, 0, 0, 0.3),
-      0 0 20px rgba(212, 160, 23, 0.2);
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.6s ease forwards;
-  }
-
-  .animate-breathing {
-    animation: breathing 3s ease-in-out infinite;
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite alternate;
-  }
-
-  /* Sezione trasparente - mostra l'immagine di sfondo */
-  .section-transparent {
-    background: linear-gradient(135deg, rgba(244, 241, 234, 0.05) 0%, rgba(123, 139, 111, 0.1) 40%, rgba(139, 94, 60, 0.05) 100%);
-    backdrop-filter: blur(1px);
-  }
-
-  /* Sezione opaca - sfondo con glassmorphism */
-  .section-opaque {
-    background: linear-gradient(135deg, rgba(244, 241, 234, 0.95) 0%, rgba(244, 241, 234, 0.98) 100%);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  /* Texture overlay moderna */
-  .texture-overlay {
-    position: relative;
-  }
-  
-  .texture-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-      radial-gradient(circle at 20% 50%, rgba(123, 139, 111, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(212, 160, 23, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 80%, rgba(139, 94, 60, 0.1) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 1;
-  }
+:root {
+  --antracite: #2C2C2C;
+  --sabbia: #F0E68D;
+  --cemento: #8B8B8B;
+  --senape: #FFD700;
+  --verdesalvia: #9CAF88;
+  --ruggine: #B7410E;
+  --bianco: #FFFFFF;
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0px);
-  }
+body {
+  font-family: 'Lato', sans-serif;
+  margin: 0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes breathing {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
+.font-header {
+  font-family: 'Oswald', sans-serif;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+.font-oswald {
+  font-family: 'Oswald', sans-serif;
 }
 
-@keyframes pulse-glow {
-  0% {
-    box-shadow: 0 0 5px rgba(212, 160, 23, 0.3);
-  }
-  100% {
-    box-shadow: 0 0 20px rgba(212, 160, 23, 0.6), 0 0 30px rgba(212, 160, 23, 0.4);
-  }
+.font-lato {
+  font-family: 'Lato', sans-serif;
 }
 
-/* Bottoni moderni con effetti 3D */
-.btn-azione {
-  @apply bg-gradient-to-r from-senape to-ruggine text-bianco px-6 py-3 rounded-xl font-oswald font-medium tracking-wide shadow-lg hover-3d transition-all duration-300 relative overflow-hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Colori personalizzati */
+.text-antracite { color: var(--antracite); }
+.text-sabbia { color: var(--sabbia); }
+.text-cemento { color: var(--cemento); }
+.text-senape { color: var(--senape); }
+.text-verdesalvia { color: var(--verdesalvia); }
+.text-ruggine { color: var(--ruggine); }
+.text-bianco { color: var(--bianco); }
+
+.bg-antracite { background-color: var(--antracite); }
+.bg-sabbia { background-color: var(--sabbia); }
+.bg-cemento { background-color: var(--cemento); }
+.bg-senape { background-color: var(--senape); }
+.bg-verdesalvia { background-color: var(--verdesalvia); }
+.bg-ruggine { background-color: var(--ruggine); }
+.bg-bianco { background-color: var(--bianco); }
+
+/* Effetti speciali */
+.section-transparent {
+  background: linear-gradient(135deg, 
+    rgba(44, 44, 44, 0.9) 0%,
+    rgba(139, 139, 139, 0.8) 50%,
+    rgba(44, 44, 44, 0.9) 100%
+  );
+  backdrop-filter: blur(10px);
 }
 
-.btn-azione::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transform: rotate(45deg);
-  transition: all 0.6s;
-  opacity: 0;
+.texture-overlay {
+  position: relative;
 }
 
-.btn-azione:hover::before {
-  animation: shine 0.6s ease-in-out;
-  opacity: 1;
-}
-
-@keyframes shine {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
-}
-
-/* Card moderne con glassmorphism e effetti 3D */
-.card-blocco {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.90) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  @apply shadow-2xl rounded-2xl p-6 backdrop-blur-md hover-3d relative overflow-hidden;
-}
-
-.card-blocco::before {
+.texture-overlay::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-}
-
-.card-blocco::after {
-  content: '';
-  position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(123, 139, 111, 0.3), transparent);
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(240, 230, 141, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(156, 175, 136, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
-.card-prodotto {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  @apply backdrop-blur-lg shadow-2xl rounded-2xl overflow-hidden hover-3d transition-all duration-300 relative;
-}
-
-.card-prodotto:hover {
-  transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) scale(1.05);
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.25),
-    0 0 30px rgba(212, 160, 23, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-/* Effetti per le icone */
-.icon-glow {
-  filter: drop-shadow(0 0 8px currentColor);
+.btn-azione {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 32px;
+  background: linear-gradient(45deg, var(--senape), #FFA500);
+  color: var(--antracite);
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  border: none;
+  cursor: pointer;
 }
 
-.icon-glow:hover {
-  filter: drop-shadow(0 0 12px currentColor);
-  transform: scale(1.1);
-}
-
-/* Bordo moderno con effetto neon */
-.bordo-lamiera {
-  border: 2px solid rgba(212, 160, 23, 0.3);
-  box-shadow: 
-    0 0 20px rgba(212, 160, 23, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 8px 32px rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-}
-
-/* Overlay con effetti moderni */
-.dark-overlay {
-  background: linear-gradient(135deg, rgba(46, 46, 46, 0.6) 0%, rgba(46, 46, 46, 0.4) 100%);
-  backdrop-filter: blur(2px);
+.btn-azione:hover {
+  background: linear-gradient(45deg, #FFA500, var(--senape));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
 }

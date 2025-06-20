@@ -92,7 +92,7 @@ export default function Home() {
             {/* Pulsanti autenticazione */}
             <div className="flex items-center gap-3">
               {user ? (
-                <div className={`flex items-center gap-3 ${justLoggedIn ? 'animate-scale-in' : ''}`}>
+                <div className={`flex items-center gap-3 transition-all duration-500 ${justLoggedIn ? 'animate-scale-in login-success-animation' : ''}`}>
                   <a
                     href={`/cliente/${user.id}`}
                     className="flex items-center gap-2 px-3 py-2 bg-senape/20 text-senape rounded-lg hover:bg-senape/30 transition font-oswald animate-fade-in"
