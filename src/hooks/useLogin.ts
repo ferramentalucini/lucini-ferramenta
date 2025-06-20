@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LoginMethod } from "@/types/auth";
 import { processEmailForSupabase } from "@/utils/authHelpers";
+import { User } from "@supabase/supabase-js";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
@@ -77,8 +78,8 @@ export function useLogin() {
               password,
             });
           } else {
-            // Cerca tra gli utenti auth per display_name
-            const foundUser = users.find(user => 
+            // Cerca tra gli utenti auth per display_name con proper typing
+            const foundUser = (users as User[]).find((user: User) => 
               user.user_metadata && user.user_metadata.display_name === loginIdentifier
             );
             
