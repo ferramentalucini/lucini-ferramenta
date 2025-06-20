@@ -11,6 +11,7 @@ export function useAuth() {
     error: register.error || login.error,
     handleRegister: register.handleRegister,
     handleLogin: login.handleLogin,
+    resetPassword: login.resetPassword,
     setError: register.setError || login.setError
   };
 }

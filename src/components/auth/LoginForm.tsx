@@ -3,25 +3,110 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
+import { LogIn, Mail } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type LoginMethod = "email" | "phone";
 
 interface LoginFormProps {
   onLogin: (identifier: string, password: string, method: LoginMethod) => Promise<void>;
+  onResetPassword: (email: string) => Promise<{success: boolean, error: string | null}>;
   loading: boolean;
   error: string | null;
 }
 
-export default function LoginForm({ onLogin, loading, error }: LoginFormProps) {
+export default function LoginForm({ onLogin, loading, error, onResetPassword }: LoginFormProps) {
   const [loginMethod, setLoginMethod] = useState<LoginMethod>("email");
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onLogin(loginIdentifier, password, loginMethod);
   };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast({
+        title: "Errore",
+        description: "Inserisci la tua email",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResetLoading(true);
+    const result = await onResetPassword(resetEmail);
+    
+    if (result.success) {
+      toast({
+        title: "Email inviata!",
+        description: "Controlla la tua casella di posta per reimpostare la password",
+      });
+      setShowResetForm(false);
+      setResetEmail("");
+    } else {
+      toast({
+        title: "Errore",
+        description: result.error || "Errore durante l'invio dell'email",
+        variant: "destructive",
+      });
+    }
+    setResetLoading(false);
+  };
+
+  if (showResetForm) {
+    return (
+      <div className="space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-antracite">Reimposta Password</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Inserisci la tua email per ricevere le istruzioni
+          </p>
+        </div>
+
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          <div>
+            <Label htmlFor="resetEmail">Email</Label>
+            <Input
+              id="resetEmail"
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="la-tua-email@esempio.com"
+              required
+              disabled={resetLoading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Button 
+              type="submit" 
+              className="w-full bg-senape hover:bg-senape/90 text-antracite font-semibold"
+              disabled={resetLoading}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              {resetLoading ? "Invio..." : "Invia Email"}
+            </Button>
+            
+            <Button 
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowResetForm(false)}
+              disabled={resetLoading}
+            >
+              Torna al Login
+            </Button>
+          </div>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -88,14 +173,26 @@ export default function LoginForm({ onLogin, loading, error }: LoginFormProps) {
         </div>
       )}
 
-      <Button 
-        type="submit" 
-        className="w-full bg-senape hover:bg-senape/90 text-antracite font-semibold"
-        disabled={loading}
-      >
-        <LogIn className="w-4 h-4 mr-2" />
-        {loading ? "Accesso..." : "Accedi"}
-      </Button>
+      <div className="space-y-2">
+        <Button 
+          type="submit" 
+          className="w-full bg-senape hover:bg-senape/90 text-antracite font-semibold"
+          disabled={loading}
+        >
+          <LogIn className="w-4 h-4 mr-2" />
+          {loading ? "Accesso..." : "Accedi"}
+        </Button>
+
+        <Button
+          type="button"
+          variant="link"
+          className="w-full text-sm text-gray-600 hover:text-antracite"
+          onClick={() => setShowResetForm(true)}
+          disabled={loading}
+        >
+          Password dimenticata?
+        </Button>
+      </div>
     </form>
   );
 }

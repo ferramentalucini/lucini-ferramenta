@@ -11,7 +11,7 @@ type AuthMode = "login" | "register";
 
 export default function AuthPage() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
-  const { loading, error, handleRegister, handleLogin, setError } = useAuth();
+  const { loading, error, handleRegister, handleLogin, resetPassword, setError } = useAuth();
 
   useEffect(() => {
     // Redirect se già loggato
@@ -40,6 +40,7 @@ export default function AuthPage() {
             {authMode === "login" ? (
               <LoginForm 
                 onLogin={handleLogin}
+                onResetPassword={resetPassword}
                 loading={loading}
                 error={error}
               />

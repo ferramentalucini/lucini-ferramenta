@@ -57,7 +57,11 @@ export function useRegister() {
 
       // FASE 2: Pulizia e validazione dati usando UID dal form
       console.log("🧹 FASE 2: Preparazione dati profilo...");
-      const cleanedData = cleanAndValidateUserData(signupData.user.id, data, ruolo);
+      // Usa l'email pulita per il profilo
+      const cleanedData = cleanAndValidateUserData(signupData.user.id, {
+        ...data,
+        email: emailPerSupabase // Usa l'email già processata
+      }, ruolo);
       
       if (!cleanedData) {
         throw new Error("Dati utente non validi dopo la pulizia");
@@ -65,7 +69,7 @@ export function useRegister() {
 
       console.log("✅ Dati preparati:", cleanedData);
 
-      // FASE 3: Salvataggio nel profilo con Service Role (bypassa RLS)
+      // FASE 3: Salvataggio nel profilo
       console.log("💾 FASE 3: Salvataggio profilo...");
       let profileSaved = false;
       let lastError: any = null;
@@ -73,16 +77,18 @@ export function useRegister() {
       for (let attempt = 1; attempt <= 5; attempt++) {
         console.log(`💾 Tentativo salvataggio ${attempt}/5`);
         
-        // Utilizziamo rpc per inserire con privilegi elevati
-        const { error: profileErr } = await supabase.rpc('insert_user_profile', {
-          p_id: cleanedData.uid,
-          p_email: cleanedData.email,
-          p_nome: cleanedData.nome,
-          p_cognome: cleanedData.cognome,
-          p_nome_utente: cleanedData.nomeUtente,
-          p_numero_telefono: cleanedData.numeroTelefono,
-          p_role: cleanedData.ruolo,
-        });
+        // Salvataggio diretto nella tabella user_profiles
+        const { error: profileErr } = await supabase
+          .from("user_profiles")
+          .insert({
+            id: cleanedData.uid,
+            email: cleanedData.email, // Questa è già l'email pulita
+            nome: cleanedData.nome,
+            cognome: cleanedData.cognome,
+            nome_utente: cleanedData.nomeUtente,
+            numero_telefono: cleanedData.numeroTelefono,
+            role: cleanedData.ruolo,
+          });
 
         if (!profileErr) {
           profileSaved = true;
@@ -92,30 +98,6 @@ export function useRegister() {
 
         lastError = profileErr;
         console.error(`❌ Errore salvataggio tentativo ${attempt}:`, profileErr);
-        
-        // Se la funzione RPC non esiste, proviamo l'inserimento diretto
-        if (profileErr.message?.includes('function') || profileErr.message?.includes('does not exist')) {
-          console.log("⚠️ Funzione RPC non trovata, provo inserimento diretto...");
-          
-          const { error: directInsertErr } = await supabase
-            .from("user_profiles")
-            .insert({
-              id: cleanedData.uid,
-              email: cleanedData.email,
-              nome: cleanedData.nome,
-              cognome: cleanedData.cognome,
-              nome_utente: cleanedData.nomeUtente,
-              numero_telefono: cleanedData.numeroTelefono,
-              role: cleanedData.ruolo,
-            });
-
-          if (!directInsertErr) {
-            profileSaved = true;
-            console.log(`✅ Profilo salvato con inserimento diretto al tentativo ${attempt}`);
-            break;
-          }
-          lastError = directInsertErr;
-        }
         
         if (attempt < 5) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
