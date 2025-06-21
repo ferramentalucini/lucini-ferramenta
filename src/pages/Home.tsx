@@ -74,7 +74,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col w-full font-lato relative">
-      {/* SFONDO DORATO CONTINUO */}
+      {/* SFONDO DORATO FISSO - Base per tutta la pagina */}
       <div 
         className="fixed inset-0 z-0"
         style={{
@@ -106,102 +106,140 @@ export default function Home() {
         />
       </div>
 
-      {/* SFERA MENU 3D - Sempre visibile quando header è collassato */}
-      {isHeaderCollapsed && (
-        <div 
-          className="menu-sphere animate-sphere-float"
-          onClick={toggleHeader}
-        >
-          <Menu size={24} className="text-antracite drop-shadow-lg" />
-        </div>
-      )}
+      {/* SFERA MENU 3D - Sempre visibile */}
+      <div 
+        className="menu-sphere animate-sphere-float"
+        onClick={toggleHeader}
+        style={{ 
+          opacity: isHeaderCollapsed ? 1 : 0,
+          pointerEvents: isHeaderCollapsed ? 'auto' : 'none',
+          transition: 'opacity 0.3s ease'
+        }}
+      >
+        <Menu size={24} className="text-antracite drop-shadow-lg" />
+      </div>
 
       {/* HEADER LUSSUOSO SOSPESO */}
-      {!isHeaderCollapsed && (
-        <header className="header-luxe animate-slide-in-elegant">
-          <div className="flex justify-between items-center px-8 md:px-12 py-6 relative z-10">
-            <span className="text-2xl md:text-3xl font-oswald font-bold text-antracite tracking-tight select-none relative z-10">
-              Ferramenta Lucini
-            </span>
-            
-            <div className="flex items-center gap-6 md:gap-8 relative z-10">
-              <nav className="flex gap-4 md:gap-6 font-medium text-base relative">
-                {/* Linea di navigazione animata */}
-                <div 
-                  className="navigation-indicator"
-                  style={getNavigationLineStyle()}
-                />
-                
-                {navigationItems.map((item, index) => (
-                  <button
-                    key={item.name}
-                    onClick={() => handleScroll(item.ref)}
-                    className="px-4 py-3 text-antracite rounded-xl hover:bg-white/20 hover:text-antracite transition-all duration-300 font-oswald button-hover-only relative z-10 font-semibold"
-                  >
-                    {item.name}
-                  </button>
-                ))}
-              </nav>
+      <header 
+        className={`header-luxe ${isHeaderCollapsed ? 'animate-header-collapse' : 'animate-header-expand'}`}
+        style={{
+          opacity: isHeaderCollapsed ? 0 : 1,
+          pointerEvents: isHeaderCollapsed ? 'none' : 'auto'
+        }}
+      >
+        <div className="flex justify-between items-center px-8 md:px-12 py-6 relative z-10">
+          <span className="text-2xl md:text-3xl font-oswald font-bold text-antracite tracking-tight select-none relative z-10">
+            Ferramenta Lucini
+          </span>
+          
+          <div className="flex items-center gap-6 md:gap-8 relative z-10">
+            <nav className="flex gap-4 md:gap-6 font-medium text-base relative">
+              {/* Linea di navigazione animata */}
+              <div 
+                className="navigation-indicator"
+                style={getNavigationLineStyle()}
+              />
               
-              {/* Pulsanti autenticazione */}
-              <div className="flex items-center gap-3">
-                {user ? (
-                  <div className={`flex items-center gap-3 transition-all duration-700 ${justLoggedIn ? 'animate-login-success animate-scale-bounce' : ''}`}>
-                    <a
-                      href={`/cliente/${user.id}`}
-                      className="flex items-center gap-2 px-5 py-3 bg-white/20 text-antracite rounded-xl hover:bg-white/30 transition-all duration-300 font-oswald animate-slide-in-elegant button-hover-only backdrop-blur-sm border border-white/30 font-semibold"
-                      style={{ animationDelay: '0.1s' }}
-                    >
-                      <UserIcon size={18} />
-                      <span className="hidden md:inline">Area Cliente</span>
-                    </a>
-                    
-                    {/* Pulsante Admin */}
-                    {isAdmin() && (
-                      <a
-                        href={`/admin/${user.id}`}
-                        className="flex items-center gap-2 px-5 py-3 bg-ruggine/80 text-white rounded-xl hover:bg-ruggine transition-all duration-300 font-oswald button-hover-only animate-slide-in-elegant backdrop-blur-sm border border-ruggine/50 relative font-semibold"
-                        style={{ animationDelay: '0.2s' }}
-                      >
-                        <Shield size={18} />
-                        <span className="hidden md:inline">Admin</span>
-                      </a>
-                    )}
-                    
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 px-5 py-3 bg-white/20 text-antracite rounded-xl hover:bg-red-500/20 hover:text-red-700 transition-all duration-300 font-oswald button-hover-only animate-slide-in-elegant backdrop-blur-sm border border-white/30 font-semibold"
-                      style={{ animationDelay: '0.3s' }}
-                    >
-                      <LogOut size={18} />
-                      <span className="hidden md:inline">Logout</span>
-                    </button>
-                  </div>
-                ) : (
+              {navigationItems.map((item, index) => (
+                <button
+                  key={item.name}
+                  onClick={() => handleScroll(item.ref)}
+                  className="px-4 py-3 text-antracite rounded-xl hover:bg-white/20 hover:text-antracite transition-all duration-300 font-oswald button-hover-only relative z-10 font-semibold"
+                >
+                  {item.name}
+                </button>
+              ))}
+            </nav>
+            
+            {/* Pulsanti autenticazione */}
+            <div className="flex items-center gap-3">
+              {user ? (
+                <div className={`flex items-center gap-3 transition-all duration-700 ${justLoggedIn ? 'animate-login-success animate-scale-bounce' : ''}`}>
                   <a
-                    href="/auth"
-                    className="flex items-center gap-2 px-6 py-4 bg-antracite text-sabbia rounded-xl hover:bg-antracite/80 transition-all duration-300 font-oswald font-semibold button-hover-only shadow-lg border border-antracite/50 relative"
+                    href={`/cliente/${user.id}`}
+                    className="flex items-center gap-2 px-5 py-3 bg-white/20 text-antracite rounded-xl hover:bg-white/30 transition-all duration-300 font-oswald animate-slide-in-elegant button-hover-only backdrop-blur-sm border border-white/30 font-semibold"
+                    style={{ animationDelay: '0.1s' }}
                   >
-                    <LogIn size={18} />
-                    <span>Login</span>
+                    <UserIcon size={18} />
+                    <span className="hidden md:inline">Area Cliente</span>
                   </a>
-                )}
-              </div>
+                  
+                  {/* Pulsante Admin */}
+                  {isAdmin() && (
+                    <a
+                      href={`/admin/${user.id}`}
+                      className="flex items-center gap-2 px-5 py-3 bg-ruggine/80 text-white rounded-xl hover:bg-ruggine transition-all duration-300 font-oswald button-hover-only animate-slide-in-elegant backdrop-blur-sm border border-ruggine/50 relative font-semibold"
+                      style={{ animationDelay: '0.2s' }}
+                    >
+                      <Shield size={18} />
+                      <span className="hidden md:inline">Admin</span>
+                    </a>
+                  )}
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-5 py-3 bg-white/20 text-antracite rounded-xl hover:bg-red-500/20 hover:text-red-700 transition-all duration-300 font-oswald button-hover-only animate-slide-in-elegant backdrop-blur-sm border border-white/30 font-semibold"
+                    style={{ animationDelay: '0.3s' }}
+                  >
+                    <LogOut size={18} />
+                    <span className="hidden md:inline">Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <a
+                  href="/auth"
+                  className="flex items-center gap-2 px-6 py-4 bg-antracite text-sabbia rounded-xl hover:bg-antracite/80 transition-all duration-300 font-oswald font-semibold button-hover-only shadow-lg border border-antracite/50 relative"
+                >
+                  <LogIn size={18} />
+                  <span>Login</span>
+                </a>
+              )}
             </div>
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
-      {/* CONTENUTO - Con spazio appropriato per l'header */}
-      <main className="flex-1 w-full pt-24 relative z-10">
-        <div ref={inizioRef} className="animate-slide-in-elegant"><HeroFerramenta /></div>
-        <div className="animate-slide-in-elegant" style={{ animationDelay: '0.2s' }}><ServiziFerramenta /></div>
-        <div ref={prodottiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.4s' }}><ProdottiConsigliati /></div>
-        <div ref={chiSiamoRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.6s' }}><ChiSiamoFerramenta /></div>
-        <div ref={contattiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.8s' }}><ContattiFerramenta /></div>
+      {/* CONTENUTO - Con sfondo bianco/grigio che scorre sopra lo sfondo dorato */}
+      <main className="flex-1 w-full relative z-10" style={{ marginTop: '100px' }}>
+        {/* Estensione dello sfondo metallico grigio dalla prima all'ultima sezione */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            background: `
+              linear-gradient(135deg, 
+                rgba(44, 44, 44, 0.95) 0%,
+                rgba(139, 139, 139, 0.9) 30%,
+                rgba(44, 44, 44, 0.95) 70%,
+                rgba(139, 139, 139, 0.85) 100%
+              )
+            `,
+            backdropFilter: 'blur(15px)'
+          }}
+        >
+          {/* Texture overlay per le sezioni */}
+          <div 
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.03) 0%, transparent 50%)
+              `
+            }}
+          />
+        </div>
+
+        {/* Sezioni del contenuto */}
+        <div className="relative z-20">
+          <div ref={inizioRef} className="animate-slide-in-elegant"><HeroFerramenta /></div>
+          <div className="animate-slide-in-elegant" style={{ animationDelay: '0.2s' }}><ServiziFerramenta /></div>
+          <div ref={prodottiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.4s' }}><ProdottiConsigliati /></div>
+          <div ref={chiSiamoRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.6s' }}><ChiSiamoFerramenta /></div>
+          <div ref={contattiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.8s' }}><ContattiFerramenta /></div>
+        </div>
       </main>
       
-      <footer className="bg-antracite/80 backdrop-blur-lg text-sabbia py-6 text-center font-oswald text-sm tracking-wide border-t border-sabbia/20 animate-slide-in-elegant relative z-10">
+      <footer className="bg-antracite/80 backdrop-blur-lg text-sabbia py-6 text-center font-oswald text-sm tracking-wide border-t border-sabbia/20 animate-slide-in-elegant relative z-20">
         <div className="px-4 relative z-10">
           &copy; {new Date().getFullYear()} Ferramenta Lucini &mdash; Designed with luxury & care
         </div>
