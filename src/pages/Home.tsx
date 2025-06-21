@@ -7,7 +7,7 @@ import ChiSiamoFerramenta from "../components/home/ChiSiamoFerramenta";
 import ContattiFerramenta from "../components/home/ContattiFerramenta";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { LogIn, LogOut, User as UserIcon, Shield } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Home() {
@@ -34,7 +34,7 @@ export default function Home() {
       // Se l'utente si è appena loggato, attiva l'animazione
       if (event === 'SIGNED_IN' && newUser && !user) {
         setJustLoggedIn(true);
-        setTimeout(() => setJustLoggedIn(false), 3000); // Rimuovi l'animazione dopo 3 secondi
+        setTimeout(() => setJustLoggedIn(false), 4000); // Rimuovi l'animazione dopo 4 secondi
       }
       
       setUser(newUser);
@@ -56,34 +56,38 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col w-full font-lato">
       {/* HEADER */}
-      <header className="sticky top-0 left-0 z-40 bg-antracite/95 backdrop-blur-sm border-b-2 border-cemento shadow-lg">
-        <div className="flex justify-between items-center px-4 md:px-16 py-3">
-          <span className="text-3xl md:text-4xl font-oswald font-bold text-senape tracking-tight select-none drop-shadow font-header">
+      <header className="sticky top-0 left-0 z-40 section-transparent backdrop-blur-lg border-b-2 border-sabbia/30 shadow-2xl animate-slide-in-elegant">
+        <div className="flex justify-between items-center px-4 md:px-16 py-4">
+          <span className="text-3xl md:text-4xl font-oswald font-bold text-sabbia tracking-tight select-none animate-text-glow font-header metallic-text">
             Ferramenta Lucini
           </span>
           <div className="flex items-center gap-4 md:gap-7">
             <nav className="flex gap-4 md:gap-7 font-medium text-base">
               <button
                 onClick={() => handleScroll(inizioRef)}
-                className="px-2 py-1 text-sabbia rounded hover:bg-senape/30 hover:text-senape transition font-oswald"
+                className="px-3 py-2 text-sabbia rounded-lg hover:bg-senape/20 hover:text-senape transition-all duration-300 font-oswald smooth-hover animate-floating-gentle"
+                style={{ animationDelay: '0.1s' }}
               >
                 Inizio
               </button>
               <button
                 onClick={() => handleScroll(prodottiRef)}
-                className="px-2 py-1 text-sabbia rounded hover:bg-senape/30 hover:text-senape transition font-oswald"
+                className="px-3 py-2 text-sabbia rounded-lg hover:bg-senape/20 hover:text-senape transition-all duration-300 font-oswald smooth-hover animate-floating-gentle"
+                style={{ animationDelay: '0.2s' }}
               >
                 Prodotti
               </button>
               <button
                 onClick={() => handleScroll(chiSiamoRef)}
-                className="px-2 py-1 text-sabbia rounded hover:bg-senape/30 hover:text-senape transition font-oswald"
+                className="px-3 py-2 text-sabbia rounded-lg hover:bg-senape/20 hover:text-senape transition-all duration-300 font-oswald smooth-hover animate-floating-gentle"
+                style={{ animationDelay: '0.3s' }}
               >
                 Chi siamo
               </button>
               <button
                 onClick={() => handleScroll(contattiRef)}
-                className="px-2 py-1 text-sabbia rounded hover:bg-senape/30 hover:text-senape transition font-oswald"
+                className="px-3 py-2 text-sabbia rounded-lg hover:bg-senape/20 hover:text-senape transition-all duration-300 font-oswald smooth-hover animate-floating-gentle"
+                style={{ animationDelay: '0.4s' }}
               >
                 Contatti
               </button>
@@ -92,12 +96,13 @@ export default function Home() {
             {/* Pulsanti autenticazione */}
             <div className="flex items-center gap-3">
               {user ? (
-                <div className={`flex items-center gap-3 transition-all duration-500 ${justLoggedIn ? 'animate-scale-in login-success-animation' : ''}`}>
+                <div className={`flex items-center gap-3 transition-all duration-700 ${justLoggedIn ? 'animate-login-success animate-scale-bounce' : ''}`}>
                   <a
                     href={`/cliente/${user.id}`}
-                    className="flex items-center gap-2 px-3 py-2 bg-senape/20 text-senape rounded-lg hover:bg-senape/30 transition font-oswald animate-fade-in"
+                    className="flex items-center gap-2 px-4 py-2 glass-effect text-sabbia rounded-xl hover:bg-senape/20 hover:text-senape transition-all duration-300 font-oswald animate-slide-in-elegant smooth-hover"
+                    style={{ animationDelay: '0.1s' }}
                   >
-                    <UserIcon size={18} />
+                    <UserIcon size={18} className="animate-icon-spin-gentle" />
                     <span className="hidden md:inline">Area Cliente</span>
                   </a>
                   
@@ -105,16 +110,18 @@ export default function Home() {
                   {isAdmin() && (
                     <a
                       href={`/admin/${user.id}`}
-                      className="flex items-center gap-2 px-3 py-2 bg-ruggine/20 text-ruggine rounded-lg hover:bg-ruggine/30 transition font-oswald animate-fade-in"
+                      className="flex items-center gap-2 px-4 py-2 glass-effect text-ruggine rounded-xl hover:bg-ruggine/20 transition-all duration-300 font-oswald animate-admin-badge smooth-hover animate-slide-in-elegant"
+                      style={{ animationDelay: '0.2s' }}
                     >
-                      <UserIcon size={18} />
+                      <Shield size={18} className="animate-pulse-golden" />
                       <span className="hidden md:inline">Admin</span>
                     </a>
                   )}
                   
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-3 py-2 bg-ruggine/20 text-sabbia rounded-lg hover:bg-ruggine/30 transition font-oswald"
+                    className="flex items-center gap-2 px-4 py-2 glass-effect text-cemento rounded-xl hover:bg-ruggine/20 hover:text-ruggine transition-all duration-300 font-oswald smooth-hover animate-slide-in-elegant"
+                    style={{ animationDelay: '0.3s' }}
                   >
                     <LogOut size={18} />
                     <span className="hidden md:inline">Logout</span>
@@ -123,7 +130,7 @@ export default function Home() {
               ) : (
                 <a
                   href="/auth"
-                  className="flex items-center gap-2 px-4 py-2 bg-senape text-antracite rounded-lg hover:bg-senape/90 transition font-oswald font-semibold"
+                  className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-senape to-yellow-400 text-antracite rounded-xl hover:from-yellow-400 hover:to-senape transition-all duration-300 font-oswald font-semibold animate-pulse-golden smooth-hover animate-button-hover"
                 >
                   <LogIn size={18} />
                   <span>Login</span>
@@ -136,14 +143,16 @@ export default function Home() {
 
       {/* CONTENUTO */}
       <main className="flex-1 w-full">
-        <div ref={inizioRef}><HeroFerramenta /></div>
-        <ServiziFerramenta />
-        <div ref={prodottiRef}><ProdottiConsigliati /></div>
-        <div ref={chiSiamoRef}><ChiSiamoFerramenta /></div>
-        <div ref={contattiRef}><ContattiFerramenta /></div>
+        <div ref={inizioRef} className="animate-slide-in-elegant"><HeroFerramenta /></div>
+        <div className="animate-slide-in-elegant" style={{ animationDelay: '0.2s' }}><ServiziFerramenta /></div>
+        <div ref={prodottiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.4s' }}><ProdottiConsigliati /></div>
+        <div ref={chiSiamoRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.6s' }}><ChiSiamoFerramenta /></div>
+        <div ref={contattiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.8s' }}><ContattiFerramenta /></div>
       </main>
-      <footer className="bg-antracite/95 backdrop-blur-sm text-sabbia py-4 text-center font-oswald text-sm tracking-wide">
-        &copy; {new Date().getFullYear()} Ferramenta Lucini &mdash; Designed with cura
+      <footer className="section-transparent backdrop-blur-lg text-sabbia py-6 text-center font-oswald text-sm tracking-wide border-t border-sabbia/20 animate-slide-in-elegant animate-text-glow">
+        <div className="animate-metallic-shine px-4">
+          &copy; {new Date().getFullYear()} Ferramenta Lucini &mdash; Designed with cura
+        </div>
       </footer>
     </div>
   );

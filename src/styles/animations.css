@@ -1,10 +1,64 @@
 
-/* Animazioni per il login e interfaccia */
+/* Animazioni uniche e fluide per Ferramenta Lucini */
 
-@keyframes scale-in {
+@keyframes metallic-shine {
   0% {
-    transform: scale(0.95);
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes floating-gentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-6px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse-golden {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4));
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+  }
+}
+
+@keyframes slide-in-elegant {
+  0% {
+    transform: translateX(-30px);
     opacity: 0;
+    filter: blur(5px);
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes scale-bounce {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 0.9;
   }
   100% {
     transform: scale(1);
@@ -12,71 +66,167 @@
   }
 }
 
-@keyframes fade-in {
+@keyframes gradient-flow {
   0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
+    background-position: 0% 50%;
   }
   50% {
-    opacity: 0.7;
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
-@keyframes float {
+@keyframes text-glow {
   0%, 100% {
+    text-shadow: 0 0 5px rgba(240, 230, 141, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(240, 230, 141, 0.6), 0 0 25px rgba(255, 215, 0, 0.4);
+  }
+}
+
+@keyframes icon-spin-gentle {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(5deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(-3deg) scale(1.05);
+  }
+  75% {
+    transform: rotate(2deg) scale(1.08);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes button-hover-glow {
+  0% {
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     transform: translateY(0px);
   }
-  50% {
-    transform: translateY(-10px);
+  100% {
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
+    transform: translateY(-3px);
   }
 }
 
-@keyframes breathing {
+@keyframes login-success-celebration {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@keyframes admin-badge-pulse {
   0%, 100% {
+    background: linear-gradient(45deg, rgba(183, 65, 14, 0.2), rgba(183, 65, 14, 0.3));
     transform: scale(1);
   }
   50% {
-    transform: scale(1.05);
+    background: linear-gradient(45deg, rgba(183, 65, 14, 0.3), rgba(183, 65, 14, 0.4));
+    transform: scale(1.02);
   }
 }
 
 /* Classi di utilità per le animazioni */
-.animate-scale-in {
-  animation: scale-in 0.3s ease-out;
+.animate-metallic-shine {
+  background: linear-gradient(90deg, transparent, rgba(240, 230, 141, 0.4), transparent);
+  background-size: 200% 100%;
+  animation: metallic-shine 3s ease-in-out infinite;
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+.animate-floating-gentle {
+  animation: floating-gentle 4s ease-in-out infinite;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+.animate-pulse-golden {
+  animation: pulse-golden 2.5s ease-in-out infinite;
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-slide-in-elegant {
+  animation: slide-in-elegant 0.6s ease-out;
 }
 
-.animate-breathing {
-  animation: breathing 2s ease-in-out infinite;
+.animate-scale-bounce {
+  animation: scale-bounce 0.5s ease-out;
 }
 
-/* Animazione specifica per il login success */
-.login-success-animation {
-  animation: scale-in 0.5s ease-out, fade-in 0.5s ease-out;
+.animate-gradient-flow {
+  background: linear-gradient(45deg, var(--sabbia), var(--senape), var(--verdesalvia), var(--sabbia));
+  background-size: 400% 400%;
+  animation: gradient-flow 6s ease infinite;
 }
 
-/* Effetto glow per le icone */
-.icon-glow {
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+.animate-text-glow {
+  animation: text-glow 3s ease-in-out infinite;
+}
+
+.animate-icon-spin-gentle {
+  animation: icon-spin-gentle 3s ease-in-out infinite;
+}
+
+.animate-button-hover {
+  animation: button-hover-glow 0.3s ease-out forwards;
+}
+
+.animate-login-success {
+  animation: login-success-celebration 0.8s ease-out;
+}
+
+.animate-admin-badge {
+  animation: admin-badge-pulse 2s ease-in-out infinite;
+}
+
+/* Effetti hover fluidi */
+.smooth-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.smooth-hover:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* Animazioni di caricamento */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    rgba(139, 139, 139, 0.1) 0%, 
+    rgba(240, 230, 141, 0.2) 50%, 
+    rgba(139, 139, 139, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: metallic-shine 1.5s ease-in-out infinite;
+}
+
+/* Effetti speciali per il nuovo tema metallico */
+.metallic-text {
+  background: linear-gradient(45deg, #FFFFFF, #F0E68D, #FFFFFF);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 4s ease infinite;
+}
+
+.glass-effect {
+  background: rgba(240, 230, 141, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(240, 230, 141, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }

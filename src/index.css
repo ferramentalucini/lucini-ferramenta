@@ -36,14 +36,32 @@ body {
   font-family: 'Lato', sans-serif;
 }
 
-/* Colori personalizzati */
+/* Colori personalizzati - Migliorati per il tema metallico */
 .text-antracite { color: var(--antracite); }
-.text-sabbia { color: var(--sabbia); }
-.text-cemento { color: var(--cemento); }
-.text-senape { color: var(--senape); }
-.text-verdesalvia { color: var(--verdesalvia); }
-.text-ruggine { color: var(--ruggine); }
-.text-bianco { color: var(--bianco); }
+.text-sabbia { 
+  color: var(--sabbia); 
+  text-shadow: 0 0 10px rgba(240, 230, 141, 0.3);
+}
+.text-cemento { 
+  color: #B8B8B8; /* Più chiaro per il contrasto */
+  text-shadow: 0 0 5px rgba(184, 184, 184, 0.2);
+}
+.text-senape { 
+  color: var(--senape); 
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+.text-verdesalvia { 
+  color: #A8C49A; /* Più chiaro per il contrasto */
+  text-shadow: 0 0 8px rgba(168, 196, 154, 0.3);
+}
+.text-ruggine { 
+  color: #D4541A; /* Più chiaro per il contrasto */
+  text-shadow: 0 0 8px rgba(212, 84, 26, 0.3);
+}
+.text-bianco { 
+  color: var(--bianco); 
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
 
 .bg-antracite { background-color: var(--antracite); }
 .bg-sabbia { background-color: var(--sabbia); }
@@ -53,14 +71,30 @@ body {
 .bg-ruggine { background-color: var(--ruggine); }
 .bg-bianco { background-color: var(--bianco); }
 
-/* Effetti speciali */
+/* Effetti speciali migliorati */
 .section-transparent {
   background: linear-gradient(135deg, 
-    rgba(44, 44, 44, 0.9) 0%,
-    rgba(139, 139, 139, 0.8) 50%,
-    rgba(44, 44, 44, 0.9) 100%
+    rgba(44, 44, 44, 0.95) 0%,
+    rgba(139, 139, 139, 0.9) 30%,
+    rgba(44, 44, 44, 0.95) 70%,
+    rgba(139, 139, 139, 0.85) 100%
   );
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
+  position: relative;
+}
+
+.section-transparent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(240, 230, 141, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(156, 175, 136, 0.03) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .texture-overlay {
@@ -76,30 +110,60 @@ body {
   bottom: 0;
   background-image: 
     radial-gradient(circle at 20% 80%, rgba(240, 230, 141, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(156, 175, 136, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 80% 20%, rgba(156, 175, 136, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .btn-azione {
   display: inline-flex;
   align-items: center;
-  padding: 12px 32px;
-  background: linear-gradient(45deg, var(--senape), #FFA500);
+  padding: 14px 36px;
+  background: linear-gradient(45deg, var(--senape), #FFA500, var(--senape));
+  background-size: 200% 200%;
   color: var(--antracite);
   text-decoration: none;
   border-radius: 50px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  letter-spacing: 1.5px;
+  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 
+    0 6px 20px rgba(255, 215, 0, 0.4),
+    0 0 15px rgba(255, 215, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   border: none;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-azione::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.btn-azione:hover::before {
+  left: 100%;
 }
 
 .btn-azione:hover {
-  background: linear-gradient(45deg, #FFA500, var(--senape));
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+  background-position: 100% 0;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 10px 30px rgba(255, 215, 0, 0.5),
+    0 0 25px rgba(255, 215, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  filter: brightness(1.1);
+}
+
+.btn-azione:active {
+  transform: translateY(-1px) scale(1.01);
 }
