@@ -1,6 +1,7 @@
-/* Animazioni uniche e fluide per Ferramenta Lucini */
 
-@keyframes metallic-shine {
+/* Design moderno oro-bianco metallico - Animazioni eleganti */
+
+@keyframes shine {
   0% {
     background-position: -200% center;
   }
@@ -9,382 +10,124 @@
   }
 }
 
-@keyframes pulse-golden {
+@keyframes float {
   0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4));
+    transform: translateY(0px);
   }
   50% {
-    opacity: 0.85;
-    transform: scale(1.02);
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+    transform: translateY(-10px);
   }
 }
 
-@keyframes slide-in-elegant {
+@keyframes fadeInUp {
   0% {
-    transform: translateX(-30px);
     opacity: 0;
-    filter: blur(5px);
+    transform: translateY(30px);
   }
   100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
     transform: translateX(0);
-    opacity: 1;
-    filter: blur(0);
   }
 }
 
-@keyframes scale-bounce {
+@keyframes scaleIn {
   0% {
-    transform: scale(0.8);
     opacity: 0;
-  }
-  60% {
-    transform: scale(1.05);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes gradient-flow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes text-glow {
-  0%, 100% {
-    text-shadow: 0 0 5px rgba(240, 230, 141, 0.3);
-  }
-  50% {
-    text-shadow: 0 0 15px rgba(240, 230, 141, 0.6), 0 0 25px rgba(255, 215, 0, 0.4);
-  }
-}
-
-@keyframes login-success-celebration {
-  0% {
     transform: scale(0.9);
-    opacity: 0;
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
-    filter: brightness(1.2);
   }
   100% {
-    transform: scale(1);
     opacity: 1;
-    filter: brightness(1);
-  }
-}
-
-@keyframes admin-badge-pulse {
-  0%, 100% {
-    background: linear-gradient(45deg, rgba(183, 65, 14, 0.2), rgba(183, 65, 14, 0.3));
     transform: scale(1);
   }
-  50% {
-    background: linear-gradient(45deg, rgba(183, 65, 14, 0.3), rgba(183, 65, 14, 0.4));
-    transform: scale(1.02);
-  }
 }
 
-/* Header elegante sospeso - Animazioni migliorate */
-@keyframes header-collapse {
-  0% {
-    transform: translateY(0) scale(1);
-    border-radius: 20px;
-    width: calc(100% - 30px);
-    height: auto;
-    right: 15px;
-    top: 15px;
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(0) scale(0.8);
-    border-radius: 35px;
-    width: 120px;
-    height: 80px;
-    right: 18px;
-    top: 18px;
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    right: 20px;
-    top: 20px;
-    opacity: 0;
-  }
-}
-
-@keyframes header-expand {
-  0% {
-    transform: translateY(0) scale(1);
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    right: 20px;
-    top: 20px;
-    opacity: 0;
-  }
-  50% {
-    transform: translateY(0) scale(0.8);
-    border-radius: 35px;
-    width: 120px;
-    height: 80px;
-    right: 18px;
-    top: 18px;
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    border-radius: 20px;
-    width: calc(100% - 30px);
-    height: auto;
-    right: 15px;
-    top: 15px;
-    opacity: 1;
-  }
-}
-
-@keyframes sphere-float {
+@keyframes glow {
   0%, 100% {
-    transform: translateY(0px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 20px rgba(218, 165, 32, 0.3);
   }
   50% {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 30px rgba(218, 165, 32, 0.6);
   }
 }
 
-@keyframes navigation-line {
-  0% {
-    transform: translateX(0%);
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
   }
-  100% {
-    transform: translateX(var(--line-position, 0%));
-  }
-}
-
-@keyframes button-hover-glow {
-  0% {
-    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
-    transform: translateY(0px);
-  }
-  100% {
-    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
-    transform: translateY(-2px);
+  50% {
+    opacity: 0.7;
   }
 }
 
-/* Classi di utilità per le animazioni */
-.animate-metallic-shine {
-  background: linear-gradient(90deg, transparent, rgba(240, 230, 141, 0.4), transparent);
+/* Classi di utilità */
+.animate-shine {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200% 100%;
-  animation: metallic-shine 3s ease-in-out infinite;
+  animation: shine 2s ease-in-out infinite;
 }
 
-.animate-pulse-golden {
-  animation: pulse-golden 2.5s ease-in-out infinite;
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
-.animate-slide-in-elegant {
-  animation: slide-in-elegant 0.6s ease-out;
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.animate-scale-bounce {
-  animation: scale-bounce 0.5s ease-out;
+.animate-slideIn {
+  animation: slideIn 0.6s ease-out;
 }
 
-.animate-gradient-flow {
-  background: linear-gradient(45deg, var(--sabbia), var(--senape), var(--verdesalvia), var(--sabbia));
-  background-size: 400% 400%;
-  animation: gradient-flow 6s ease infinite;
+.animate-scaleIn {
+  animation: scaleIn 0.4s ease-out;
 }
 
-.animate-text-glow {
-  animation: text-glow 3s ease-in-out infinite;
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
 }
 
-.animate-login-success {
-  animation: login-success-celebration 0.8s ease-out;
+.animate-pulse-soft {
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.animate-admin-badge {
-  animation: admin-badge-pulse 2s ease-in-out infinite;
+/* Effetti hover eleganti */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.animate-header-collapse {
-  animation: header-collapse 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-.animate-header-expand {
-  animation: header-expand 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+.hover-scale {
+  transition: transform 0.3s ease;
 }
 
-.animate-sphere-float {
-  animation: sphere-float 3s ease-in-out infinite;
-}
-
-.animate-navigation-line {
-  animation: navigation-line 0.4s ease-out forwards;
-}
-
-/* Effetti hover fluidi */
-.smooth-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-.smooth-hover:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
-}
-
-.button-hover-only {
-  transition: all 0.3s ease;
-}
-
-.button-hover-only:hover {
-  animation: button-hover-glow 0.3s ease-out forwards;
-}
-
-/* Animazioni di caricamento */
-.loading-shimmer {
-  background: linear-gradient(90deg, 
-    rgba(139, 139, 139, 0.1) 0%, 
-    rgba(240, 230, 141, 0.2) 50%, 
-    rgba(139, 139, 139, 0.1) 100%
-  );
-  background-size: 200% 100%;
-  animation: metallic-shine 1.5s ease-in-out infinite;
-}
-
-/* Header lussuoso come nell'immagine - Colori migliorati */
-.header-luxe {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  right: 15px;
-  z-index: 50;
-  border-radius: 20px;
-  background: linear-gradient(135deg, 
-    #DAA520 0%,
-    #FFD700 15%,
-    #B8860B 30%,
-    #FFD700 45%,
-    #DAA520 60%,
-    #FFD700 75%,
-    #B8860B 90%,
-    #DAA520 100%
-  );
-  box-shadow: 
-    0 15px 50px rgba(0, 0, 0, 0.3),
-    inset 0 2px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(255, 215, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-.header-luxe::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 18px;
-  background: 
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-  transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-/* Sfera menu 3D elegante - Sempre visibile */
-.menu-sphere {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  z-index: 60;
-  cursor: pointer;
-  background: radial-gradient(circle at 30% 30%, 
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 215, 0, 1) 30%,
-    rgba(184, 134, 11, 1) 70%,
-    rgba(139, 139, 139, 0.9) 100%
-  );
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.3),
-    inset 0 0 15px rgba(255, 215, 0, 0.3),
-    inset -8px -8px 15px rgba(0, 0, 0, 0.1),
-    inset 8px 8px 15px rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.menu-sphere:hover {
+.hover-scale:hover {
   transform: scale(1.05);
-  box-shadow: 
-    0 12px 35px rgba(0, 0, 0, 0.4),
-    inset 0 0 20px rgba(255, 215, 0, 0.4),
-    inset -8px -8px 15px rgba(0, 0, 0, 0.1),
-    inset 8px 8px 15px rgba(255, 255, 255, 0.3);
 }
 
-.menu-sphere::before {
-  content: '';
-  position: absolute;
-  top: 15%;
-  left: 25%;
-  width: 20%;
-  height: 20%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
-  border-radius: 50%;
-  filter: blur(2px);
+/* Glassmorphism moderno */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Indicatore di navigazione elegante */
-.navigation-indicator {
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.8), 
-    rgba(255, 255, 255, 0.6), 
-    rgba(255, 255, 255, 0.8)
-  );
-  border-radius: 2px;
-  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-}
-
-/* Classi di utilità per le animazioni */
-.animate-header-collapse {
-  animation: header-collapse 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
-}
-
-.animate-header-expand {
-  animation: header-expand 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+.glass-gold {
+  background: rgba(218, 165, 32, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(218, 165, 32, 0.3);
 }

@@ -1,34 +1,27 @@
 
-import React, { useRef, useEffect, useState } from "react";
-import HeroFerramenta from "../components/home/HeroFerramenta";
-import ServiziFerramenta from "../components/home/ServiziFerramenta";
-import ProdottiConsigliati from "../components/home/ProdottiConsigliati";
-import ChiSiamoFerramenta from "../components/home/ChiSiamoFerramenta";
-import ContattiFerramenta from "../components/home/ContattiFerramenta";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { LogIn, LogOut, User as UserIcon, Shield, Menu } from "lucide-react";
+import { 
+  LogIn, 
+  LogOut, 
+  User as UserIcon, 
+  Shield, 
+  Wrench, 
+  Hammer, 
+  Settings,
+  Star,
+  Award,
+  Phone,
+  Mail,
+  MapPin
+} from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useScrollNavigation } from "@/hooks/useScrollNavigation";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [justLoggedIn, setJustLoggedIn] = useState(false);
   const { role, isAdmin } = useUserRole(user);
-  const { scrollY, isHeaderCollapsed, currentSection, toggleHeader } = useScrollNavigation();
-  
-  // Scroll references
-  const inizioRef = useRef<HTMLDivElement>(null);
-  const prodottiRef = useRef<HTMLDivElement>(null);
-  const chiSiamoRef = useRef<HTMLDivElement>(null);
-  const contattiRef = useRef<HTMLDivElement>(null);
-
-  const navigationItems = [
-    { name: 'Inizio', ref: inizioRef },
-    { name: 'Prodotti', ref: prodottiRef },
-    { name: 'Chi siamo', ref: chiSiamoRef },
-    { name: 'Contatti', ref: contattiRef }
-  ];
 
   useEffect(() => {
     // Controllo sessione attuale
@@ -40,10 +33,9 @@ export default function Home() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const newUser = session?.user ?? null;
       
-      // Se l'utente si è appena loggato, attiva l'animazione
       if (event === 'SIGNED_IN' && newUser && !user) {
         setJustLoggedIn(true);
-        setTimeout(() => setJustLoggedIn(false), 4000);
+        setTimeout(() => setJustLoggedIn(false), 3000);
       }
       
       setUser(newUser);
@@ -52,196 +44,240 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [user]);
 
-  const handleScroll = (ref: React.RefObject<HTMLDivElement>) => {
-    if (ref.current) {
-      ref.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
 
-  // Calcola la posizione della linea di navigazione
-  const getNavigationLineStyle = () => {
-    const sectionWidth = 100 / navigationItems.length;
-    const position = currentSection * sectionWidth;
-    return {
-      width: `${sectionWidth}%`,
-      left: `${position}%`
-    };
-  };
-
   return (
-    <div className="min-h-screen flex flex-col w-full font-lato relative">
-      {/* SFONDO DORATO FISSO - Base per tutta la pagina */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          background: `
-            linear-gradient(135deg, 
-              #DAA520 0%,
-              #FFD700 15%,
-              #B8860B 30%,
-              #FFD700 45%,
-              #DAA520 60%,
-              #FFD700 75%,
-              #B8860B 90%,
-              #DAA520 100%
-            )
-          `,
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        {/* Texture overlay per profondità */}
-        <div 
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(139, 139, 139, 0.1) 0%, transparent 70%)
-            `
-          }}
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {/* Header moderno flottante */}
+      <header className="fixed top-0 left-0 right-0 z-50 p-4">
+        <nav className="max-w-7xl mx-auto glass rounded-2xl p-4 animate-fadeInUp">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center animate-glow">
+                <Hammer className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                Ferramenta Lucini
+              </h1>
+            </div>
 
-      {/* SFERA MENU 3D - Sempre visibile */}
-      <div 
-        className="menu-sphere animate-sphere-float"
-        onClick={toggleHeader}
-        style={{ 
-          opacity: isHeaderCollapsed ? 1 : 0,
-          pointerEvents: isHeaderCollapsed ? 'auto' : 'none',
-          transition: 'opacity 0.3s ease'
-        }}
-      >
-        <Menu size={24} className="text-antracite drop-shadow-lg" />
-      </div>
+            {/* Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#home" className="text-gray-700 hover:text-yellow-600 transition-colors font-medium">
+                Home
+              </a>
+              <a href="#prodotti" className="text-gray-700 hover:text-yellow-600 transition-colors font-medium">
+                Prodotti
+              </a>
+              <a href="#servizi" className="text-gray-700 hover:text-yellow-600 transition-colors font-medium">
+                Servizi
+              </a>
+              <a href="#contatti" className="text-gray-700 hover:text-yellow-600 transition-colors font-medium">
+                Contatti
+              </a>
+            </div>
 
-      {/* HEADER LUSSUOSO SOSPESO */}
-      <header 
-        className={`header-luxe ${isHeaderCollapsed ? 'animate-header-collapse' : 'animate-header-expand'}`}
-        style={{
-          opacity: isHeaderCollapsed ? 0 : 1,
-          pointerEvents: isHeaderCollapsed ? 'none' : 'auto'
-        }}
-      >
-        <div className="flex justify-between items-center px-8 md:px-12 py-6 relative z-10">
-          <span className="text-2xl md:text-3xl font-oswald font-bold text-antracite tracking-tight select-none relative z-10">
-            Ferramenta Lucini
-          </span>
-          
-          <div className="flex items-center gap-6 md:gap-8 relative z-10">
-            <nav className="flex gap-4 md:gap-6 font-medium text-base relative">
-              {/* Linea di navigazione animata */}
-              <div 
-                className="navigation-indicator"
-                style={getNavigationLineStyle()}
-              />
-              
-              {navigationItems.map((item, index) => (
-                <button
-                  key={item.name}
-                  onClick={() => handleScroll(item.ref)}
-                  className="px-4 py-3 text-antracite rounded-xl hover:bg-white/20 hover:text-antracite transition-all duration-300 font-oswald button-hover-only relative z-10 font-semibold"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </nav>
-            
-            {/* Pulsanti autenticazione */}
-            <div className="flex items-center gap-3">
+            {/* Auth buttons */}
+            <div className="flex items-center space-x-3">
               {user ? (
-                <div className={`flex items-center gap-3 transition-all duration-700 ${justLoggedIn ? 'animate-login-success animate-scale-bounce' : ''}`}>
+                <div className={`flex items-center space-x-3 ${justLoggedIn ? 'animate-scaleIn' : ''}`}>
                   <a
                     href={`/cliente/${user.id}`}
-                    className="flex items-center gap-2 px-5 py-3 bg-white/20 text-antracite rounded-xl hover:bg-white/30 transition-all duration-300 font-oswald animate-slide-in-elegant button-hover-only backdrop-blur-sm border border-white/30 font-semibold"
-                    style={{ animationDelay: '0.1s' }}
+                    className="flex items-center space-x-2 px-4 py-2 glass-gold rounded-xl hover-lift text-yellow-700 font-medium"
                   >
-                    <UserIcon size={18} />
-                    <span className="hidden md:inline">Area Cliente</span>
+                    <UserIcon className="w-4 h-4" />
+                    <span>Area Cliente</span>
                   </a>
                   
-                  {/* Pulsante Admin */}
                   {isAdmin() && (
                     <a
                       href={`/admin/${user.id}`}
-                      className="flex items-center gap-2 px-5 py-3 bg-ruggine/80 text-white rounded-xl hover:bg-ruggine transition-all duration-300 font-oswald button-hover-only animate-slide-in-elegant backdrop-blur-sm border border-ruggine/50 relative font-semibold"
-                      style={{ animationDelay: '0.2s' }}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl hover-lift font-medium"
                     >
-                      <Shield size={18} />
-                      <span className="hidden md:inline">Admin</span>
+                      <Shield className="w-4 h-4" />
+                      <span>Admin</span>
                     </a>
                   )}
                   
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-5 py-3 bg-white/20 text-antracite rounded-xl hover:bg-red-500/20 hover:text-red-700 transition-all duration-300 font-oswald button-hover-only animate-slide-in-elegant backdrop-blur-sm border border-white/30 font-semibold"
-                    style={{ animationDelay: '0.3s' }}
+                    className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-red-600 transition-colors font-medium"
                   >
-                    <LogOut size={18} />
-                    <span className="hidden md:inline">Logout</span>
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
                   </button>
                 </div>
               ) : (
                 <a
                   href="/auth"
-                  className="flex items-center gap-2 px-6 py-4 bg-antracite text-sabbia rounded-xl hover:bg-antracite/80 transition-all duration-300 font-oswald font-semibold button-hover-only shadow-lg border border-antracite/50 relative"
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl hover-lift font-medium animate-shine"
                 >
-                  <LogIn size={18} />
-                  <span>Login</span>
+                  <LogIn className="w-4 h-4" />
+                  <span>Accedi</span>
                 </a>
               )}
             </div>
           </div>
-        </div>
+        </nav>
       </header>
 
-      {/* CONTENUTO - Con sfondo bianco/grigio che scorre sopra lo sfondo dorato */}
-      <main className="flex-1 w-full relative z-10" style={{ marginTop: '100px' }}>
-        {/* Estensione dello sfondo metallico grigio dalla prima all'ultima sezione */}
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            background: `
-              linear-gradient(135deg, 
-                rgba(44, 44, 44, 0.95) 0%,
-                rgba(139, 139, 139, 0.9) 30%,
-                rgba(44, 44, 44, 0.95) 70%,
-                rgba(139, 139, 139, 0.85) 100%
-              )
-            `,
-            backdropFilter: 'blur(15px)'
-          }}
-        >
-          {/* Texture overlay per le sezioni */}
-          <div 
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage: `
-                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.03) 0%, transparent 50%)
-              `
-            }}
-          />
+      {/* Hero Section */}
+      <section id="home" className="pt-32 pb-20 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="animate-fadeInUp">
+            <h2 className="text-6xl md:text-7xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-gray-800 via-gray-700 to-yellow-600 bg-clip-text text-transparent">
+                Ferramenta
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent animate-shine">
+                di Qualità
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Da oltre 60 anni, la tradizione incontra l'innovazione. 
+              Strumenti professionali, consulenza esperta e servizio impeccabile.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-2xl font-semibold hover-lift animate-glow">
+                Scopri i Prodotti
+              </button>
+              <button className="px-8 py-4 glass rounded-2xl font-semibold text-gray-700 hover-lift">
+                Contattaci
+              </button>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Sezioni del contenuto */}
-        <div className="relative z-20">
-          <div ref={inizioRef} className="animate-slide-in-elegant"><HeroFerramenta /></div>
-          <div className="animate-slide-in-elegant" style={{ animationDelay: '0.2s' }}><ServiziFerramenta /></div>
-          <div ref={prodottiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.4s' }}><ProdottiConsigliati /></div>
-          <div ref={chiSiamoRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.6s' }}><ChiSiamoFerramenta /></div>
-          <div ref={contattiRef} className="animate-slide-in-elegant" style={{ animationDelay: '0.8s' }}><ContattiFerramenta /></div>
+      {/* Features Section */}
+      <section className="py-20 px-4 bg-gradient-to-r from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 animate-fadeInUp">
+            <h3 className="text-4xl font-bold mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              Perché Sceglierci
+            </h3>
+            <p className="text-xl text-gray-600">Eccellenza in ogni dettaglio</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Award,
+                title: "Qualità Garantita",
+                desc: "Solo i migliori marchi e prodotti testati per durare nel tempo"
+              },
+              {
+                icon: Settings,
+                title: "Consulenza Esperta",
+                desc: "Il nostro team ti guida nella scelta degli strumenti più adatti"
+              },
+              {
+                icon: Star,
+                title: "Servizio Premium",
+                desc: "Assistenza personalizzata e supporto post-vendita eccezionale"
+              }
+            ].map((feature, index) => (
+              <div 
+                key={index}
+                className="glass-gold rounded-2xl p-8 hover-lift animate-slideIn"
+                style={{ animationDelay: `${index * 0.2}s` }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-2xl flex items-center justify-center mb-6 animate-float">
+                  <feature.icon className="w-8 h-8 text-white" />
+                </div>
+                <h4 className="text-xl font-bold mb-4 text-gray-800">{feature.title}</h4>
+                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
-      
-      <footer className="bg-antracite/80 backdrop-blur-lg text-sabbia py-6 text-center font-oswald text-sm tracking-wide border-t border-sabbia/20 animate-slide-in-elegant relative z-20">
-        <div className="px-4 relative z-10">
-          &copy; {new Date().getFullYear()} Ferramenta Lucini &mdash; Designed with luxury & care
+      </section>
+
+      {/* Products Section */}
+      <section id="prodotti" className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 animate-fadeInUp">
+            <h3 className="text-4xl font-bold mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              I Nostri Prodotti
+            </h3>
+            <p className="text-xl text-gray-600">Strumenti professionali per ogni esigenza</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { name: "Trapani", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" },
+              { name: "Martelli", img: "https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=400&q=80" },
+              { name: "Cacciaviti", img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" },
+              { name: "Chiavi", img: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=400&q=80" }
+            ].map((product, index) => (
+              <div 
+                key={index}
+                className="glass rounded-2xl overflow-hidden hover-lift animate-scaleIn"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={product.img} 
+                    alt={product.name}
+                    className="w-full h-full object-cover hover-scale"
+                  />
+                </div>
+                <div className="p-6">
+                  <h4 className="text-lg font-bold text-gray-800 mb-2">{product.name}</h4>
+                  <button className="w-full py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl font-medium hover-lift">
+                    Scopri di più
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contatti" className="py-20 px-4 bg-gradient-to-r from-gray-50 to-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="animate-fadeInUp">
+            <h3 className="text-4xl font-bold mb-8 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              Contattaci
+            </h3>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="glass-gold rounded-2xl p-6 hover-lift">
+                <Phone className="w-8 h-8 text-yellow-600 mx-auto mb-4" />
+                <p className="font-semibold text-gray-800">Telefono</p>
+                <p className="text-gray-600">031 1234567</p>
+              </div>
+              <div className="glass-gold rounded-2xl p-6 hover-lift">
+                <Mail className="w-8 h-8 text-yellow-600 mx-auto mb-4" />
+                <p className="font-semibold text-gray-800">Email</p>
+                <p className="text-gray-600">info@ferramentalucini.it</p>
+              </div>
+              <div className="glass-gold rounded-2xl p-6 hover-lift">
+                <MapPin className="w-8 h-8 text-yellow-600 mx-auto mb-4" />
+                <p className="font-semibold text-gray-800">Indirizzo</p>
+                <p className="text-gray-600">Via degli Artigiani 14, Como</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
+              <Hammer className="w-5 h-5 text-white" />
+            </div>
+            <h4 className="text-xl font-bold">Ferramenta Lucini</h4>
+          </div>
+          <p className="text-gray-400">
+            &copy; {new Date().getFullYear()} Ferramenta Lucini - Eccellenza dal 1964
+          </p>
         </div>
       </footer>
     </div>
