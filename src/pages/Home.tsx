@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -22,12 +21,15 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [justLoggedIn, setJustLoggedIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { role, isAdmin } = useUserRole(user);
+  const { role, loading: roleLoading, isAdmin } = useUserRole(user);
 
   useEffect(() => {
     // Controllo sessione attuale
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        console.log('👤 Utente trovato:', session.user.email);
+      }
     });
 
     // Listener per cambiamenti di autenticazione
@@ -35,6 +37,7 @@ export default function Home() {
       const newUser = session?.user ?? null;
       
       if (event === 'SIGNED_IN' && newUser && !user) {
+        console.log('✅ Nuovo login rilevato');
         setJustLoggedIn(true);
         setTimeout(() => setJustLoggedIn(false), 3000);
       }
@@ -46,8 +49,21 @@ export default function Home() {
   }, [user]);
 
   const handleLogout = async () => {
+    console.log('📤 Logout utente');
     await supabase.auth.signOut();
   };
+
+  // Debug logging
+  useEffect(() => {
+    if (user && !roleLoading) {
+      console.log('🔍 Debug ruoli:', {
+        userEmail: user.email,
+        role: role,
+        isAdmin: isAdmin(),
+        roleLoading
+      });
+    }
+  }, [user, role, roleLoading, isAdmin]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-neutral-50 to-neutral-100 relative overflow-hidden">
@@ -90,22 +106,31 @@ export default function Home() {
           <div className="flex items-center gap-3">
             {user ? (
               <div className={`flex items-center gap-2 ${justLoggedIn ? 'animate-fadeIn' : ''}`}>
-                <a
-                  href={`/cliente/${user.id}`}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-sm font-medium text-neutral-700"
-                >
-                  <UserIcon size={16} />
-                  <span>Area Cliente</span>
-                </a>
-                
-                {isAdmin() && (
-                  <a
-                    href={`/admin/${user.id}`}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all text-sm font-medium shadow-lg"
-                  >
-                    <Shield size={16} />
-                    <span>Amministrazione</span>
-                  </a>
+                {roleLoading ? (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-neutral-100 rounded-xl">
+                    <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm text-neutral-600">Caricamento...</span>
+                  </div>
+                ) : (
+                  <>
+                    <a
+                      href={`/cliente/${user.id}`}
+                      className="flex items-center gap-2 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-sm font-medium text-neutral-700"
+                    >
+                      <UserIcon size={16} />
+                      <span>Area Cliente</span>
+                    </a>
+                    
+                    {isAdmin() && (
+                      <a
+                        href={`/admin/${user.id}`}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all text-sm font-medium shadow-lg"
+                      >
+                        <Shield size={16} />
+                        <span>Amministrazione</span>
+                      </a>
+                    )}
+                  </>
                 )}
                 
                 <button
