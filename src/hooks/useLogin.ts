@@ -23,6 +23,12 @@ export function useLogin() {
     }
 
     try {
+      // Pulisci eventuali sessioni precedenti
+      await supabase.auth.signOut();
+      
+      // Aspetta un momento per assicurarsi che la sessione sia pulita
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       let signInData;
       
       if (loginMethod === "phone") {
@@ -77,9 +83,22 @@ export function useLogin() {
       console.log("Risposta login:", signInData);
       if (signInData.error) throw signInData.error;
       
-      if (signInData.data.user) {
+      if (signInData.data.user && signInData.data.session) {
         console.log("✅ Login completato:", signInData.data.user.id);
-        window.location.replace(`/cliente/${signInData.data.user.id}`);
+        
+        // Aspetta un momento per assicurarsi che la sessione sia stabilita
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Verifica che la sessione sia effettivamente attiva
+        const { data: currentSession } = await supabase.auth.getSession();
+        if (currentSession.session) {
+          console.log("✅ Sessione verificata, reindirizzamento...");
+          window.location.replace(`/cliente/${signInData.data.user.id}`);
+        } else {
+          throw new Error("Sessione non stabilita correttamente");
+        }
+      } else {
+        throw new Error("Login completato ma dati utente mancanti");
       }
     } catch (error: any) {
       console.error("💥 Errore login:", error);
@@ -90,6 +109,8 @@ export function useLogin() {
         errorMessage = "Credenziali non valide. Verifica email/nome utente e password.";
       } else if (errorMessage.includes("Email not confirmed")) {
         errorMessage = "Devi confermare la tua email prima di accedere. Controlla la tua casella di posta.";
+      } else if (errorMessage.includes("Too many requests")) {
+        errorMessage = "Troppi tentativi di accesso. Attendi un momento prima di riprovare.";
       }
       
       setError(errorMessage);

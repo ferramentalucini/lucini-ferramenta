@@ -12,6 +12,9 @@ export function useAuth() {
     handleRegister: register.handleRegister,
     handleLogin: login.handleLogin,
     resetPassword: login.resetPassword,
-    setError: register.setError || login.setError
+    setError: (error: string | null) => {
+      if (register.setError) register.setError(error);
+      if (login.setError) login.setError(error);
+    }
   };
 }
