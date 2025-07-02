@@ -29,6 +29,12 @@ import {
   Activity
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useProducts } from "@/hooks/useProducts";
+import { useMessages } from "@/hooks/useMessages";
+import { useAdminStats } from "@/hooks/useAdminStats";
+import { ProductForm } from "@/components/admin/ProductForm";
+import { formatDistanceToNow } from "date-fns";
+import { it } from "date-fns/locale";
 
 type UserProfile = {
   nome: string;
@@ -46,7 +52,12 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const { role, isAdmin } = useUserRole(user);
+  const { products, loading: productsLoading, deleteProduct } = useProducts();
+  const { messages, loading: messagesLoading, markAsRead } = useMessages();
+  const { stats, loading: statsLoading } = useAdminStats();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [productFormOpen, setProductFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
     checkAuth();
@@ -214,8 +225,10 @@ export default function AdminDashboard() {
                   <CardTitle className="text-sm font-medium text-neutral-600">Utenti Totali</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-neutral-800">1,234</div>
-                  <p className="text-xs text-green-600">+12% rispetto al mese scorso</p>
+                  <div className="text-2xl font-bold text-neutral-800">
+                    {statsLoading ? "..." : stats.totalUsers}
+                  </div>
+                  <p className="text-xs text-green-600">utenti registrati</p>
                 </CardContent>
               </Card>
               
@@ -224,8 +237,10 @@ export default function AdminDashboard() {
                   <CardTitle className="text-sm font-medium text-neutral-600">Prodotti</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-neutral-800">567</div>
-                  <p className="text-xs text-blue-600">+8 nuovi questa settimana</p>
+                  <div className="text-2xl font-bold text-neutral-800">
+                    {statsLoading ? "..." : stats.totalProducts}
+                  </div>
+                  <p className="text-xs text-blue-600">prodotti nel catalogo</p>
                 </CardContent>
               </Card>
               
@@ -234,8 +249,12 @@ export default function AdminDashboard() {
                   <CardTitle className="text-sm font-medium text-neutral-600">Messaggi</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-neutral-800">89</div>
-                  <p className="text-xs text-amber-600">5 non letti</p>
+                  <div className="text-2xl font-bold text-neutral-800">
+                    {messagesLoading ? "..." : messages.length}
+                  </div>
+                  <p className="text-xs text-amber-600">
+                    {statsLoading ? "..." : stats.unreadMessages} non letti
+                  </p>
                 </CardContent>
               </Card>
               
@@ -244,8 +263,10 @@ export default function AdminDashboard() {
                   <CardTitle className="text-sm font-medium text-neutral-600">Attività</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-neutral-800">24</div>
-                  <p className="text-xs text-purple-600">azioni oggi</p>
+                  <div className="text-2xl font-bold text-neutral-800">
+                    {statsLoading ? "..." : stats.recentActivities.length}
+                  </div>
+                  <p className="text-xs text-purple-600">attività recenti</p>
                 </CardContent>
               </Card>
             </div>
@@ -260,27 +281,28 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-neutral-800">Nuovo utente registrato</p>
-                        <p className="text-xs text-neutral-600">2 minuti fa</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-neutral-800">Prodotto aggiornato</p>
-                        <p className="text-xs text-neutral-600">15 minuti fa</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-neutral-800">Nuovo messaggio ricevuto</p>
-                        <p className="text-xs text-neutral-600">1 ora fa</p>
-                      </div>
-                    </div>
+                    {statsLoading ? (
+                      <div className="text-center py-4 text-neutral-500">Caricamento...</div>
+                    ) : stats.recentActivities.length > 0 ? (
+                      stats.recentActivities.map((activity) => (
+                        <div key={activity.id} className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
+                          <div className={`w-2 h-2 rounded-full ${
+                            activity.type === 'user' ? 'bg-green-500' : 'bg-blue-500'
+                          }`}></div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-neutral-800">{activity.description}</p>
+                            <p className="text-xs text-neutral-600">
+                              {formatDistanceToNow(new Date(activity.timestamp), { 
+                                addSuffix: true, 
+                                locale: it 
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-neutral-500">Nessuna attività recente</div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -340,7 +362,10 @@ export default function AdminDashboard() {
                   <Upload size={16} />
                   Importa
                 </Button>
-                <Button className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600">
+                <Button 
+                  onClick={() => setProductFormOpen(true)}
+                  className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600"
+                >
                   <Plus size={16} />
                   Nuovo Prodotto
                 </Button>
@@ -366,14 +391,54 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="text-center py-12 text-neutral-500">
-                    <Package size={48} className="mx-auto mb-4 text-neutral-300" />
-                    <p className="text-lg font-medium mb-2">Nessun prodotto trovato</p>
-                    <p className="text-sm">Inizia aggiungendo il tuo primo prodotto</p>
-                    <Button className="mt-4 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600">
-                      Aggiungi Prodotto
-                    </Button>
-                  </div>
+                  {productsLoading ? (
+                    <div className="text-center py-12 text-neutral-500">Caricamento prodotti...</div>
+                  ) : products.length > 0 ? (
+                    <div className="grid gap-4">
+                      {products.map((product) => (
+                        <div key={product.id} className="flex items-center justify-between p-4 border border-neutral-200 rounded-lg">
+                          <div className="flex-1">
+                            <h3 className="font-medium text-neutral-800">{product.name}</h3>
+                            <p className="text-sm text-neutral-600">{product.category}</p>
+                            <p className="text-sm text-neutral-500">
+                              Prezzo: €{product.price} - Stock: {product.stock_quantity}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingProduct(product);
+                                setProductFormOpen(true);
+                              }}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deleteProduct(product.id)}
+                            >
+                              <Trash size={16} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-neutral-500">
+                      <Package size={48} className="mx-auto mb-4 text-neutral-300" />
+                      <p className="text-lg font-medium mb-2">Nessun prodotto trovato</p>
+                      <p className="text-sm">Inizia aggiungendo il tuo primo prodotto</p>
+                      <Button 
+                        onClick={() => setProductFormOpen(true)}
+                        className="mt-4 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600"
+                      >
+                        Aggiungi Prodotto
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -440,11 +505,41 @@ export default function AdminDashboard() {
                   <CardTitle>Messaggi Ricevuti</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12 text-neutral-500">
-                    <MessageSquare size={48} className="mx-auto mb-4 text-neutral-300" />
-                    <p className="text-lg font-medium mb-2">Nessun messaggio</p>
-                    <p className="text-sm">I messaggi degli utenti appariranno qui</p>
-                  </div>
+                  {messagesLoading ? (
+                    <div className="text-center py-12 text-neutral-500">Caricamento messaggi...</div>
+                  ) : messages.length > 0 ? (
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {messages.slice(0, 5).map((message) => (
+                        <div 
+                          key={message.id} 
+                          className={`p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 ${
+                            !message.is_read ? 'border-amber-300 bg-amber-50' : 'border-neutral-200'
+                          }`}
+                          onClick={() => markAsRead(message.id)}
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="font-medium text-sm text-neutral-800">{message.subject}</p>
+                            {!message.is_read && <div className="w-2 h-2 bg-amber-500 rounded-full"></div>}
+                          </div>
+                          <p className="text-xs text-neutral-600">
+                            Da: Utente #{message.sender_id.slice(0, 8)}
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            {formatDistanceToNow(new Date(message.created_at), { 
+                              addSuffix: true, 
+                              locale: it 
+                            })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-neutral-500">
+                      <MessageSquare size={48} className="mx-auto mb-4 text-neutral-300" />
+                      <p className="text-lg font-medium mb-2">Nessun messaggio</p>
+                      <p className="text-sm">I messaggi degli utenti appariranno qui</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -510,6 +605,15 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ProductForm
+        open={productFormOpen}
+        onOpenChange={(open) => {
+          setProductFormOpen(open);
+          if (!open) setEditingProduct(null);
+        }}
+        product={editingProduct}
+      />
     </div>
   );
 }
