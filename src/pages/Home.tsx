@@ -19,6 +19,7 @@ import {
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
 import { useNavigate } from "react-router-dom";
+import ferramentaBg from "@/assets/ferramenta-bg.jpg";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -71,14 +72,17 @@ export default function Home() {
   }, [user, role, roleLoading, isAdmin]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-neutral-50 to-neutral-100 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, #000 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
-        }}></div>
-      </div>
+    <div className="min-h-screen relative">
+      {/* Fixed Background Image */}
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${ferramentaBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
 
       {/* Floating Navigation */}
       <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-white/80 backdrop-blur-xl border border-neutral-200/50 rounded-2xl px-6 py-4 shadow-xl">
@@ -187,21 +191,21 @@ export default function Home() {
         )}
       </nav>
 
-      {/* Hero Section */}
-      <section id="home" className="min-h-screen flex items-center justify-center px-6 pt-24">
+      {/* Hero Section - With Background */}
+      <section id="home" className="min-h-screen flex items-center justify-center px-6 pt-24 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <div className="space-y-8">
             <div className="space-y-4">
               <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-neutral-900 via-neutral-700 to-amber-600 bg-clip-text text-transparent">
+                <span className="text-white drop-shadow-2xl">
                   Ferramenta
                 </span>
                 <br />
-                <span className="bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-lg">
                   di Qualità
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
                 Da oltre 60 anni, tradizione e innovazione si incontrano per offrire strumenti professionali e servizio impeccabile.
               </p>
             </div>
@@ -210,7 +214,7 @@ export default function Home() {
               <button className="px-8 py-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-2xl font-semibold hover:from-amber-500 hover:to-yellow-600 transition-all shadow-xl">
                 Scopri i Prodotti
               </button>
-              <button className="px-8 py-4 bg-white/80 backdrop-blur-sm border border-neutral-200 rounded-2xl font-semibold text-neutral-700 hover:bg-white transition-all">
+              <button className="px-8 py-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl font-semibold text-white hover:bg-white/30 transition-all">
                 Contattaci
               </button>
             </div>
@@ -218,8 +222,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 px-6">
+      {/* Features Section - White Background */}
+      <section className="py-24 px-6 bg-white relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent">
@@ -248,7 +252,7 @@ export default function Home() {
             ].map((feature, index) => (
               <div 
                 key={index}
-                className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300"
+                className="bg-white border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 shadow-lg"
               >
                 <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl flex items-center justify-center mb-6">
                   <feature.icon size={32} className="text-white" />
@@ -261,21 +265,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Products Section */}
-      <section id="prodotti" className="py-24 px-6 bg-white/50">
+      {/* Products Section - With Background */}
+      <section id="prodotti" className="py-24 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white drop-shadow-2xl">
               I Nostri Prodotti
             </h2>
-            <p className="text-xl text-neutral-600">Strumenti professionali per ogni esigenza</p>
+            <p className="text-xl text-white/90 drop-shadow-lg">Strumenti professionali per ogni esigenza</p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {productsLoading ? (
               // Loading skeleton
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl overflow-hidden">
+                <div key={index} className="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden shadow-lg">
                   <div className="h-48 bg-neutral-200 animate-pulse"></div>
                   <div className="p-6">
                     <div className="h-4 bg-neutral-200 rounded animate-pulse mb-4"></div>
@@ -287,7 +291,7 @@ export default function Home() {
               products.slice(0, 4).map((product) => (
                 <div 
                   key={product.id}
-                  className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                  className="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group shadow-lg"
                   onClick={() => navigate(`/prodotto/${product.id}`)}
                 >
                   <div className="h-48 overflow-hidden">
@@ -325,24 +329,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contatti" className="py-24 px-6">
+      {/* Contact Section - White Background */}
+      <section id="contatti" className="py-24 px-6 bg-white relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-16 bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent">
             Contattaci
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 shadow-lg">
               <Phone size={32} className="text-amber-500 mx-auto mb-4" />
               <p className="font-semibold text-neutral-800 mb-2">Telefono</p>
               <p className="text-neutral-600">031 1234567</p>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 shadow-lg">
               <Mail size={32} className="text-amber-500 mx-auto mb-4" />
               <p className="font-semibold text-neutral-800 mb-2">Email</p>
               <p className="text-neutral-600">info@ferramentalucini.it</p>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white border border-neutral-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 shadow-lg">
               <MapPin size={32} className="text-amber-500 mx-auto mb-4" />
               <p className="font-semibold text-neutral-800 mb-2">Indirizzo</p>
               <p className="text-neutral-600">Via degli Artigiani 14, Como</p>
@@ -352,7 +356,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-neutral-900 text-white">
+      <footer className="py-12 px-6 bg-neutral-900 text-white relative z-10">
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center">
