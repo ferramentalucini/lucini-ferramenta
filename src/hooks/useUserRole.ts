@@ -1,45 +1,57 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 export function useUserRole(user: User | null) {
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
+  // Gestisce i cambiamenti dell'utente solo quando l'ID cambia davvero
   useEffect(() => {
-    if (!user) {
-      setRole(null);
-      setLoading(false);
-      return;
+    const newUserId = user?.id || null;
+    
+    if (newUserId !== userId) {
+      setUserId(newUserId);
+      
+      if (!newUserId) {
+        setRole(null);
+        setLoading(false);
+        return;
+      }
+      
+      // Inizializza loading solo quando cambia utente
+      setLoading(true);
     }
+  }, [user, userId]);
+
+  // Fetch del ruolo solo quando userId cambia
+  useEffect(() => {
+    if (!userId) return;
 
     const fetchUserRole = async () => {
       try {
-        console.log('🔍 Recupero ruolo per utente:', user.id);
+        console.log('🔍 Recupero ruolo per utente:', userId);
         
-        // Prima proviamo a leggere dalla tabella user_profiles
         const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
           .select('role')
-          .eq('id', user.id)
+          .eq('id', userId)
           .single();
 
         if (profileError) {
           console.error('Errore recupero profilo:', profileError);
-          // Fallback: controlla se l'email contiene .admin
-          const isAdminEmail = user.email?.includes('.admin') || false;
+          const isAdminEmail = user?.email?.includes('.admin') || false;
           setRole(isAdminEmail ? 'Amministratore' : 'Cliente');
         } else {
           console.log('✅ Ruolo recuperato dal database:', profile.role);
-          // Normalizza il ruolo per compatibilità
           const normalizedRole = profile.role === 'amministratore' ? 'Amministratore' : 'Cliente';
           setRole(normalizedRole);
         }
       } catch (error) {
         console.error('💥 Errore generico recupero ruolo:', error);
-        // Fallback: controlla se l'email contiene .admin
-        const isAdminEmail = user.email?.includes('.admin') || false;
+        const isAdminEmail = user?.email?.includes('.admin') || false;
         setRole(isAdminEmail ? 'Amministratore' : 'Cliente');
       } finally {
         setLoading(false);
@@ -47,19 +59,23 @@ export function useUserRole(user: User | null) {
     };
 
     fetchUserRole();
-  }, [user]);
+  }, [userId, user?.email]);
 
-  const hasPermission = async () => false;
+  const hasPermission = useCallback(async () => false, []);
   
-  const isAdmin = () => {
-    console.log('🔎 Controllo admin - Ruolo corrente:', role);
-    return role === 'Amministratore';
-  };
+  const isAdmin = useCallback(() => {
+    const result = role === 'Amministratore';
+    console.log('🔎 Controllo admin - Ruolo corrente:', role, '- È admin:', result);
+    return result;
+  }, [role]);
 
-  return {
+  // Memoizza il risultato per evitare re-render inutili
+  const memoizedResult = useMemo(() => ({
     role,
     loading,
     hasPermission,
     isAdmin
-  };
+  }), [role, loading, hasPermission, isAdmin]);
+
+  return memoizedResult;
 }
