@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProducts, type Product } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 
 type ProductFormProps = {
   open: boolean;
@@ -14,6 +16,7 @@ type ProductFormProps = {
 
 export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
   const { createProduct, updateProduct } = useProducts();
+  const { categories, createCategory } = useCategories();
   const [formData, setFormData] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -116,11 +119,21 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
 
           <div>
             <Label htmlFor="category">Categoria</Label>
-            <Input
-              id="category"
-              value={formData.category}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-            />
+            <Select 
+              value={formData.category} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleziona una categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.name}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

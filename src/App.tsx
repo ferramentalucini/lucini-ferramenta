@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home";
+import ProductDetail from "./pages/ProductDetail";
 import ClienteAreaNew from "./pages/ClienteAreaNew";
 import AdminArea from "./pages/AdminArea";
 import AdminAreaNew from "./pages/AdminAreaNew";
@@ -16,6 +17,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/prodotto/:id" element={<ProductDetail />} />
         <Route path="/email-confirmation" element={<EmailConfirmationPage />} />
         <Route path="/email-confirmed" element={<EmailConfirmedPage />} />
         <Route path="/cliente" element={<ClienteAreaNew />} />

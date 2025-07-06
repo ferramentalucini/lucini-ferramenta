@@ -13,15 +13,20 @@ import {
   Mail,
   MapPin,
   Menu,
-  X
+  X,
+  Package
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [justLoggedIn, setJustLoggedIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { role, loading: roleLoading, isAdmin } = useUserRole(user);
+  const { products, loading: productsLoading } = usePublicProducts();
 
   useEffect(() => {
     // Controllo sessione attuale
@@ -267,31 +272,55 @@ export default function Home() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { name: "Trapani", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" },
-              { name: "Martelli", img: "https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=400&q=80" },
-              { name: "Cacciaviti", img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" },
-              { name: "Chiavi", img: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=400&q=80" }
-            ].map((product, index) => (
-              <div 
-                key={index}
-                className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
-              >
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src={product.img} 
-                    alt={product.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
+            {productsLoading ? (
+              // Loading skeleton
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl overflow-hidden">
+                  <div className="h-48 bg-neutral-200 animate-pulse"></div>
+                  <div className="p-6">
+                    <div className="h-4 bg-neutral-200 rounded animate-pulse mb-4"></div>
+                    <div className="h-8 bg-neutral-200 rounded animate-pulse"></div>
+                  </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-bold text-neutral-800 mb-4">{product.name}</h3>
-                  <button className="w-full py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl font-medium hover:from-amber-500 hover:to-yellow-600 transition-all">
-                    Scopri di più
-                  </button>
+              ))
+            ) : products.length > 0 ? (
+              products.slice(0, 4).map((product) => (
+                <div 
+                  key={product.id}
+                  className="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                  onClick={() => navigate(`/prodotto/${product.id}`)}
+                >
+                  <div className="h-48 overflow-hidden">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                        <Package size={32} className="text-neutral-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-neutral-800 mb-2">{product.name}</h3>
+                    {product.price && (
+                      <p className="text-amber-600 font-semibold mb-4">€{product.price.toFixed(2)}</p>
+                    )}
+                    <button className="w-full py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl font-medium hover:from-amber-500 hover:to-yellow-600 transition-all">
+                      Scopri di più
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              // No products fallback
+              <div className="col-span-full text-center py-12">
+                <Package size={64} className="mx-auto mb-4 text-neutral-400" />
+                <p className="text-neutral-600">Nessun prodotto disponibile al momento.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
