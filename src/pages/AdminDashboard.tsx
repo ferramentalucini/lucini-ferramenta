@@ -143,44 +143,47 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-white via-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-xl border-b border-neutral-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-3 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center">
-                <Shield size={20} className="text-white" />
+            <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Shield size={16} className="md:w-5 md:h-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-neutral-800">
-                  Pannello Amministrazione
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg md:text-2xl font-bold text-neutral-800 truncate">
+                  Pannello Admin
                 </h1>
-                <p className="text-neutral-600 text-sm">Benvenuto, {profile.nome} {profile.cognome}</p>
+                <p className="text-neutral-600 text-xs md:text-sm truncate">Ciao, {profile.nome}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
               <Button 
                 variant="outline" 
+                size="sm"
                 onClick={() => navigate("/")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 md:gap-2 px-2 md:px-4"
               >
-                <Home size={18} />
-                Home
+                <Home size={14} className="md:w-[18px] md:h-[18px]" />
+                <span className="hidden sm:inline">Home</span>
               </Button>
               <Button 
                 variant="outline" 
+                size="sm"
                 onClick={() => navigate(`/cliente/${userId}`)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 md:gap-2 px-2 md:px-4"
               >
-                <User size={18} />
-                Area Cliente
+                <User size={14} className="md:w-[18px] md:h-[18px]" />
+                <span className="hidden sm:inline">Cliente</span>
               </Button>
               <Button 
                 variant="destructive" 
+                size="sm"
                 onClick={handleLogout}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 md:gap-2 px-2 md:px-4"
               >
-                <LogOut size={18} />
-                Logout
+                <LogOut size={14} className="md:w-[18px] md:h-[18px]" />
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
@@ -188,38 +191,44 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-white/80 backdrop-blur-sm border border-neutral-200/50">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <Activity size={16} />
-              Dashboard
+      <div className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-white/80 backdrop-blur-sm border border-neutral-200/50 h-auto p-1">
+            <TabsTrigger value="dashboard" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
+              <Activity size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+              <span className="sm:hidden">Home</span>
             </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <Package size={16} />
-              Prodotti
+            <TabsTrigger value="products" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
+              <Package size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Prodotti</span>
+              <span className="sm:hidden">Prod</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users size={16} />
-              Utenti
+            <TabsTrigger value="users" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
+              <Users size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Utenti</span>
+              <span className="sm:hidden">User</span>
             </TabsTrigger>
-            <TabsTrigger value="communication" className="flex items-center gap-2">
-              <MessageSquare size={16} />
-              Comunicazioni
+            <TabsTrigger value="communication" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
+              <MessageSquare size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Comunicazioni</span>
+              <span className="sm:hidden">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <BarChart3 size={16} />
-              Analytics
+            <TabsTrigger value="analytics" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
+              <BarChart3 size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Analytics</span>
+              <span className="sm:hidden">Stats</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings size={16} />
-              Impostazioni
+            <TabsTrigger value="settings" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
+              <Settings size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Impostazioni</span>
+              <span className="sm:hidden">Set</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <TabsContent value="dashboard" className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
               <Card className="bg-white/80 backdrop-blur-sm border border-neutral-200/50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-neutral-600">Utenti Totali</CardTitle>
@@ -351,23 +360,25 @@ export default function AdminDashboard() {
 
           {/* Products Tab */}
           <TabsContent value="products" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-neutral-800">Gestione Prodotti</h2>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Download size={16} />
-                  Esporta
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h2 className="text-xl md:text-2xl font-bold text-neutral-800">Gestione Prodotti</h2>
+              <div className="flex items-center gap-2 md:gap-3 overflow-x-auto">
+                <Button variant="outline" size="sm" className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                  <Download size={14} className="md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Esporta</span>
                 </Button>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Upload size={16} />
-                  Importa
+                <Button variant="outline" size="sm" className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                  <Upload size={14} className="md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Importa</span>
                 </Button>
                 <Button 
                   onClick={() => setProductFormOpen(true)}
-                  className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600"
+                  size="sm"
+                  className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 flex-shrink-0"
                 >
-                  <Plus size={16} />
-                  Nuovo Prodotto
+                  <Plus size={14} className="md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Nuovo</span>
+                  <span className="sm:hidden">+</span>
                 </Button>
               </div>
             </div>
