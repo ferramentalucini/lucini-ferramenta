@@ -32,7 +32,9 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useProducts } from "@/hooks/useProducts";
 import { useMessages } from "@/hooks/useMessages";
 import { useAdminStats } from "@/hooks/useAdminStats";
-import { ProductForm } from "@/components/admin/ProductForm";
+import { UserManagement } from "@/components/admin/UserManagement";
+import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
+import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
 import { formatDistanceToNow } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -457,133 +459,17 @@ export default function AdminDashboard() {
 
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-4 md:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-xl md:text-2xl font-bold text-neutral-800">Gestione Utenti</h2>
-              <div className="flex items-center gap-2 md:gap-3 overflow-x-auto">
-                <Button variant="outline" size="sm" className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                  <Download size={14} className="md:w-4 md:h-4" />
-                  <span className="hidden sm:inline">Esporta</span>
-                </Button>
-                <Button size="sm" className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 flex-shrink-0">
-                  <Plus size={14} className="md:w-4 md:h-4" />
-                  <span className="hidden sm:inline">Invita</span>
-                  <span className="sm:hidden">+</span>
-                </Button>
-              </div>
-            </div>
-
-            <Card className="bg-white/80 backdrop-blur-sm border border-neutral-200/50">
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4">
-                  <div className="flex-1 relative">
-                    <Search size={18} className="md:w-5 md:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
-                    <input
-                      type="text"
-                      placeholder="Cerca utenti..."
-                      className="w-full pl-10 pr-4 py-2 text-sm md:text-base border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    />
-                  </div>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1 md:gap-2 w-full sm:w-auto">
-                    <Filter size={14} className="md:w-4 md:h-4" />
-                    Filtri
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center py-8 md:py-12 text-neutral-500">
-                    <Users size={40} className="md:w-12 md:h-12 mx-auto mb-4 text-neutral-300" />
-                    <p className="text-base md:text-lg font-medium mb-2">Gestione utenti in sviluppo</p>
-                    <p className="text-xs md:text-sm">Questa funzionalità sarà disponibile presto</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <UserManagement />
           </TabsContent>
 
           {/* Communication Tab */}
           <TabsContent value="communication" className="space-y-4 md:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-xl md:text-2xl font-bold text-neutral-800">Centro Comunicazioni</h2>
-              <Button size="sm" className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600">
-                <Plus size={14} className="md:w-4 md:h-4" />
-                <span className="hidden sm:inline">Nuova Comunicazione</span>
-                <span className="sm:hidden">Nuovo</span>
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              <Card className="bg-white/80 backdrop-blur-sm border border-neutral-200/50">
-                <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">Messaggi Ricevuti</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {messagesLoading ? (
-                    <div className="text-center py-8 md:py-12 text-neutral-500">Caricamento messaggi...</div>
-                  ) : messages.length > 0 ? (
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {messages.slice(0, 5).map((message) => (
-                        <div 
-                          key={message.id} 
-                          className={`p-3 border rounded-lg cursor-pointer hover:bg-neutral-50 ${
-                            !message.is_read ? 'border-amber-300 bg-amber-50' : 'border-neutral-200'
-                          }`}
-                          onClick={() => markAsRead(message.id)}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <p className="font-medium text-sm text-neutral-800 truncate pr-2">{message.subject}</p>
-                            {!message.is_read && <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0"></div>}
-                          </div>
-                          <p className="text-xs text-neutral-600 truncate">
-                            Da: Utente #{message.sender_id.slice(0, 8)}
-                          </p>
-                          <p className="text-xs text-neutral-500">
-                            {formatDistanceToNow(new Date(message.created_at), { 
-                              addSuffix: true, 
-                              locale: it 
-                            })}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 md:py-12 text-neutral-500">
-                      <MessageSquare size={40} className="md:w-12 md:h-12 mx-auto mb-4 text-neutral-300" />
-                      <p className="text-base md:text-lg font-medium mb-2">Nessun messaggio</p>
-                      <p className="text-xs md:text-sm">I messaggi degli utenti appariranno qui</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-sm border border-neutral-200/50">
-                <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">Notifiche di Sistema</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 md:py-12 text-neutral-500">
-                    <Bell size={40} className="md:w-12 md:h-12 mx-auto mb-4 text-neutral-300" />
-                    <p className="text-base md:text-lg font-medium mb-2">Tutto tranquillo</p>
-                    <p className="text-xs md:text-sm">Le notifiche di sistema appariranno qui</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <CommunicationCenter />
           </TabsContent>
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <h2 className="text-2xl font-bold text-neutral-800">Analytics e Reportistica</h2>
-            
-            <Card className="bg-white/80 backdrop-blur-sm border border-neutral-200/50">
-              <CardContent className="pt-6">
-                <div className="text-center py-12 text-neutral-500">
-                  <BarChart3 size={48} className="mx-auto mb-4 text-neutral-300" />
-                  <p className="text-lg font-medium mb-2">Analytics in sviluppo</p>
-                  <p className="text-sm">Grafici e statistiche dettagliate saranno disponibili presto</p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="analytics" className="space-y-4 md:space-y-6">
+            <AdvancedAnalytics />
           </TabsContent>
 
           {/* Settings Tab */}
