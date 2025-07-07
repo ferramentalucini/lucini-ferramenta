@@ -85,18 +85,18 @@ export default function Home() {
       />
 
       {/* Floating Navigation */}
-      <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-white/80 backdrop-blur-xl border border-neutral-200/50 rounded-2xl px-6 py-4 shadow-xl">
-        <div className="flex items-center justify-between gap-8">
+      <nav className="fixed top-3 left-3 right-3 md:top-6 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 z-50 bg-white/90 backdrop-blur-xl border border-neutral-200/50 rounded-2xl px-4 py-3 md:px-6 md:py-4 shadow-xl">
+        <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rounded-sm"></div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center">
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-white rounded-sm"></div>
             </div>
-            <span className="font-bold text-neutral-800 text-lg">Ferramenta Lucini</span>
+            <span className="font-bold text-neutral-800 text-sm md:text-lg truncate">Ferramenta Lucini</span>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6">
             <a href="#home" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
               Home
             </a>
@@ -112,31 +112,31 @@ export default function Home() {
           </div>
 
           {/* Auth Section */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {user ? (
-              <div className={`flex items-center gap-2 ${justLoggedIn ? 'animate-fadeIn' : ''}`}>
+              <div className={`flex items-center gap-1 md:gap-2 ${justLoggedIn ? 'animate-fadeIn' : ''}`}>
                 {roleLoading ? (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-neutral-100 rounded-xl">
+                  <div className="flex items-center gap-2 px-2 py-1 md:px-4 md:py-2 bg-neutral-100 rounded-xl">
                     <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm text-neutral-600">Caricamento...</span>
+                    <span className="text-xs md:text-sm text-neutral-600 hidden sm:inline">Caricamento...</span>
                   </div>
                 ) : (
                   <>
                     <a
                       href={`/cliente/${user.id}`}
-                      className="flex items-center gap-2 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-sm font-medium text-neutral-700"
+                      className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-xs md:text-sm font-medium text-neutral-700"
                     >
-                      <UserIcon size={16} />
-                      <span>Area Cliente</span>
+                      <UserIcon size={14} className="md:w-4 md:h-4" />
+                      <span className="hidden sm:inline">Area Cliente</span>
                     </a>
                     
                     {isAdmin() && (
                       <a
                         href={`/admin/${user.id}`}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all text-sm font-medium shadow-lg"
+                        className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all text-xs md:text-sm font-medium shadow-lg"
                       >
-                        <Shield size={16} />
-                        <span>Amministrazione</span>
+                        <Shield size={14} className="md:w-4 md:h-4" />
+                        <span className="hidden sm:inline">Admin</span>
                       </a>
                     )}
                   </>
@@ -144,18 +144,18 @@ export default function Home() {
                 
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-4 py-2 text-neutral-600 hover:text-red-600 transition-colors text-sm font-medium"
+                  className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 text-neutral-600 hover:text-red-600 transition-colors text-xs md:text-sm font-medium"
                 >
-                  <LogOut size={16} />
-                  <span>Logout</span>
+                  <LogOut size={14} className="md:w-4 md:h-4" />
+                  <span className="hidden sm:inline">Logout</span>
                 </button>
               </div>
             ) : (
               <a
                 href="/auth"
-                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all text-sm font-medium shadow-lg"
+                className="flex items-center gap-1 md:gap-2 px-3 py-2 md:px-6 md:py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl hover:from-amber-500 hover:to-yellow-600 transition-all text-xs md:text-sm font-medium shadow-lg"
               >
-                <LogIn size={16} />
+                <LogIn size={14} className="md:w-4 md:h-4" />
                 <span>Accedi</span>
               </a>
             )}
@@ -163,9 +163,9 @@ export default function Home() {
             {/* Mobile Menu Button */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
+              className="lg:hidden p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
