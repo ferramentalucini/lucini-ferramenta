@@ -35,6 +35,7 @@ import { useAdminStats } from "@/hooks/useAdminStats";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
 import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
+import { ProductForm } from "@/components/admin/ProductForm";
 import { formatDistanceToNow } from "date-fns";
 import { it } from "date-fns/locale";
 
