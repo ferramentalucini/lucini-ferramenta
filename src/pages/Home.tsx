@@ -97,18 +97,30 @@ export default function Home() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-6">
-            <a href="#home" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+            <button 
+              onClick={() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium"
+            >
               Home
-            </a>
-            <a href="#prodotti" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+            </button>
+            <button 
+              onClick={() => document.getElementById('prodotti')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium"
+            >
               Prodotti
-            </a>
-            <a href="#servizi" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+            </button>
+            <button 
+              onClick={() => navigate('/servizi')}
+              className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium"
+            >
               Servizi
-            </a>
-            <a href="#contatti" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+            </button>
+            <button 
+              onClick={() => document.getElementById('contatti')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium"
+            >
               Contatti
-            </a>
+            </button>
           </div>
 
           {/* Auth Section */}
@@ -174,18 +186,42 @@ export default function Home() {
         {isMenuOpen && (
           <div className="md:hidden mt-4 pt-4 border-t border-neutral-200">
             <div className="flex flex-col gap-3">
-              <a href="#home" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+              <button 
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium text-left"
+              >
                 Home
-              </a>
-              <a href="#prodotti" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+              </button>
+              <button 
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  document.getElementById('prodotti')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium text-left"
+              >
                 Prodotti
-              </a>
-              <a href="#servizi" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+              </button>
+              <button 
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate('/servizi');
+                }}
+                className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium text-left"
+              >
                 Servizi
-              </a>
-              <a href="#contatti" className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium">
+              </button>
+              <button 
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  document.getElementById('contatti')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium text-left"
+              >
                 Contatti
-              </a>
+              </button>
             </div>
           </div>
         )}
@@ -211,10 +247,16 @@ export default function Home() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-2xl font-semibold hover:from-amber-500 hover:to-yellow-600 transition-all shadow-xl">
+              <button 
+                onClick={() => navigate('/prodotti')}
+                className="px-8 py-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-2xl font-semibold hover:from-amber-500 hover:to-yellow-600 transition-all shadow-xl"
+              >
                 Scopri i Prodotti
               </button>
-              <button className="px-8 py-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl font-semibold text-white hover:bg-white/30 transition-all">
+              <button 
+                onClick={() => document.getElementById('contatti')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-8 py-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl font-semibold text-white hover:bg-white/30 transition-all"
+              >
                 Contattaci
               </button>
             </div>
@@ -326,6 +368,18 @@ export default function Home() {
               </div>
             )}
           </div>
+          
+          {/* "Vedi tutti i prodotti" button */}
+          {!productsLoading && products.length > 0 && (
+            <div className="text-center mt-12">
+              <button 
+                onClick={() => navigate('/prodotti')}
+                className="px-8 py-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl font-semibold text-white hover:bg-white/30 transition-all shadow-xl"
+              >
+                Vedi Tutti i Prodotti
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
