@@ -11,7 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useProducts, type Product } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
-import { Package, Euro, Hash, Image, Tag, ToggleLeft } from "lucide-react";
+import { Package, Euro, Hash, Image, Tag, ToggleLeft, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type ProductFormProps = {
   open: boolean;
@@ -22,6 +23,7 @@ type ProductFormProps = {
 export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
   const { createProduct, updateProduct } = useProducts();
   const { categories, createCategory } = useCategories();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -32,6 +34,8 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
     is_active: product?.is_active ?? true
   });
   const [loading, setLoading] = useState(false);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,21 +132,87 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
                   <Label htmlFor="category" className="text-sm font-medium text-neutral-700">
                     Categoria
                   </Label>
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                  >
-                    <SelectTrigger className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400">
-                      <SelectValue placeholder="Seleziona una categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.name}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  
+                  {!showNewCategory ? (
+                    <div className="space-y-2">
+                      <Select 
+                        value={formData.category} 
+                        onValueChange={(value) => {
+                          if (value === "new_category") {
+                            setShowNewCategory(true);
+                          } else {
+                            setFormData(prev => ({ ...prev, category: value }));
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="mt-1 bg-white border-neutral-300 focus:border-amber-400 focus:ring-amber-400 shadow-sm">
+                          <SelectValue placeholder="Seleziona una categoria" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-neutral-200 shadow-lg">
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.name} className="hover:bg-amber-50">
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="new_category" className="text-amber-600 font-medium hover:bg-amber-50">
+                            <div className="flex items-center gap-2">
+                              <Plus size={14} />
+                              Crea nuova categoria
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          placeholder="Nome nuova categoria"
+                          className="flex-1 bg-white border-neutral-300 focus:border-amber-400 focus:ring-amber-400"
+                        />
+                        <Button
+                          type="button"
+                          onClick={async () => {
+                            if (newCategoryName.trim()) {
+                              try {
+                                await createCategory({ name: newCategoryName.trim() });
+                                setFormData(prev => ({ ...prev, category: newCategoryName.trim() }));
+                                setNewCategoryName('');
+                                setShowNewCategory(false);
+                                toast({
+                                  title: "Successo",
+                                  description: "Categoria creata con successo",
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: "Errore",
+                                  description: "Impossibile creare la categoria",
+                                  variant: "destructive",
+                                });
+                              }
+                            }
+                          }}
+                          className="bg-amber-500 hover:bg-amber-600 text-white"
+                          disabled={!newCategoryName.trim()}
+                        >
+                          <Plus size={16} />
+                        </Button>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setShowNewCategory(false);
+                          setNewCategoryName('');
+                        }}
+                        className="w-full text-neutral-600 border-neutral-300 hover:bg-neutral-50"
+                      >
+                        Annulla
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -214,9 +284,13 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+                <div className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                  formData.is_active 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-gray-50 border-gray-200'
+                }`}>
                   <div className="flex items-center gap-3">
-                    <ToggleLeft size={20} className="text-neutral-600" />
+                    <ToggleLeft size={20} className={formData.is_active ? "text-green-600" : "text-gray-400"} />
                     <div>
                       <Label htmlFor="is_active" className="text-sm font-medium text-neutral-700 cursor-pointer">
                         Prodotto Attivo
@@ -224,14 +298,26 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
                       <p className="text-xs text-neutral-500">Il prodotto sarà visibile nel catalogo</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={formData.is_active ? "default" : "secondary"} className="text-xs">
+                  <div className="flex items-center gap-3">
+                    <Badge 
+                      variant={formData.is_active ? "default" : "secondary"} 
+                      className={`text-xs transition-colors ${
+                        formData.is_active 
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
                       {formData.is_active ? "Attivo" : "Inattivo"}
                     </Badge>
                     <Switch
                       id="is_active"
                       checked={formData.is_active}
                       onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                      className={`transition-colors ${
+                        formData.is_active 
+                          ? 'data-[state=checked]:bg-green-500' 
+                          : 'data-[state=unchecked]:bg-gray-300'
+                      }`}
                     />
                   </div>
                 </div>
