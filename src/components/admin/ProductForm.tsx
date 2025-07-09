@@ -3,10 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useProducts, type Product } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { Package, Euro, Hash, Image, Tag, ToggleLeft } from "lucide-react";
 
 type ProductFormProps = {
   open: boolean;
@@ -68,109 +73,191 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-sm border border-neutral-200/50">
+        <DialogHeader className="pb-6">
+          <DialogTitle className="text-2xl font-bold text-neutral-800 flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center">
+              <Package size={20} className="text-white" />
+            </div>
             {product ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
           </DialogTitle>
+          <DialogDescription className="text-neutral-600">
+            {product ? 'Aggiorna le informazioni del prodotto' : 'Aggiungi un nuovo prodotto al catalogo'}
+          </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Nome *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Informazioni di base */}
+          <Card className="bg-white/60 backdrop-blur-sm border border-neutral-200/50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Package size={18} className="text-amber-500" />
+                <h3 className="text-lg font-semibold text-neutral-800">Informazioni Prodotto</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name" className="text-sm font-medium text-neutral-700 flex items-center gap-2">
+                    <Tag size={14} />
+                    Nome Prodotto *
+                  </Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                    className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400"
+                    placeholder="Inserisci il nome del prodotto"
+                  />
+                </div>
 
-          <div>
-            <Label htmlFor="description">Descrizione</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            />
-          </div>
+                <div>
+                  <Label htmlFor="description" className="text-sm font-medium text-neutral-700">
+                    Descrizione
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400 min-h-[100px]"
+                    placeholder="Descrivi il prodotto..."
+                  />
+                </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="price">Prezzo (€)</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="stock">Quantità</Label>
-              <Input
-                id="stock"
-                type="number"
-                value={formData.stock_quantity}
-                onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))}
-              />
-            </div>
-          </div>
+                <div>
+                  <Label htmlFor="category" className="text-sm font-medium text-neutral-700">
+                    Categoria
+                  </Label>
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400">
+                      <SelectValue placeholder="Seleziona una categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div>
-            <Label htmlFor="category">Categoria</Label>
-            <Select 
-              value={formData.category} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleziona una categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.name}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Prezzi e inventario */}
+          <Card className="bg-white/60 backdrop-blur-sm border border-neutral-200/50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Euro size={18} className="text-green-500" />
+                <h3 className="text-lg font-semibold text-neutral-800">Prezzi e Inventario</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="price" className="text-sm font-medium text-neutral-700 flex items-center gap-2">
+                    <Euro size={14} />
+                    Prezzo (€)
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                    className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="stock" className="text-sm font-medium text-neutral-700 flex items-center gap-2">
+                    <Hash size={14} />
+                    Quantità in Stock
+                  </Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    value={formData.stock_quantity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))}
+                    className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div>
-            <Label htmlFor="image_url">URL Immagine</Label>
-            <Input
-              id="image_url"
-              type="url"
-              value={formData.image_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-            />
-          </div>
+          {/* Immagine e stato */}
+          <Card className="bg-white/60 backdrop-blur-sm border border-neutral-200/50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Image size={18} className="text-blue-500" />
+                <h3 className="text-lg font-semibold text-neutral-800">Immagine e Stato</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="image_url" className="text-sm font-medium text-neutral-700 flex items-center gap-2">
+                    <Image size={14} />
+                    URL Immagine
+                  </Label>
+                  <Input
+                    id="image_url"
+                    type="url"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                    className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400"
+                    placeholder="https://esempio.com/immagine.jpg"
+                  />
+                </div>
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="is_active"
-              checked={formData.is_active}
-              onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-            />
-            <Label htmlFor="is_active">Prodotto attivo</Label>
-          </div>
+                <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+                  <div className="flex items-center gap-3">
+                    <ToggleLeft size={20} className="text-neutral-600" />
+                    <div>
+                      <Label htmlFor="is_active" className="text-sm font-medium text-neutral-700 cursor-pointer">
+                        Prodotto Attivo
+                      </Label>
+                      <p className="text-xs text-neutral-500">Il prodotto sarà visibile nel catalogo</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={formData.is_active ? "default" : "secondary"} className="text-xs">
+                      {formData.is_active ? "Attivo" : "Inattivo"}
+                    </Badge>
+                    <Switch
+                      id="is_active"
+                      checked={formData.is_active}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="flex gap-2 pt-4">
+          <Separator className="my-6" />
+
+          {/* Pulsanti azione */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 h-12 text-neutral-700 border-neutral-300 hover:bg-neutral-50"
+              disabled={loading}
             >
               Annulla
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1"
+              className="flex-1 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white font-medium"
             >
-              {loading ? 'Salvataggio...' : (product ? 'Aggiorna' : 'Crea')}
+              {loading ? 'Salvataggio...' : (product ? 'Aggiorna Prodotto' : 'Crea Prodotto')}
             </Button>
           </div>
         </form>
