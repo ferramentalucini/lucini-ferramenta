@@ -28,7 +28,8 @@ import {
   Upload,
   Bell,
   Activity,
-  Menu
+  Menu,
+  Percent
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useProducts } from "@/hooks/useProducts";
@@ -38,6 +39,7 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
 import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { PromotionsManager } from "@/components/admin/PromotionsManager";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { formatDistanceToNow } from "date-fns";
 import { it } from "date-fns/locale";
@@ -54,6 +56,7 @@ type UserProfile = {
 const adminMenuItems = [
   { id: "dashboard", title: "Dashboard", description: "Panoramica generale" },
   { id: "products", title: "Prodotti", description: "Gestione catalogo" },
+  { id: "promotions", title: "Promozioni", description: "Gestione sconti e offerte" },
   { id: "users", title: "Utenti", description: "Gestione utenti" },
   { id: "communication", title: "Comunicazioni", description: "Messaggi e notifiche" },
   { id: "analytics", title: "Analytics", description: "Statistiche avanzate" },
@@ -255,7 +258,7 @@ export default function AdminDashboard() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
               {/* Mobile Tab Navigation */}
               <div className="lg:hidden">
-                <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-white/80 backdrop-blur-sm border border-neutral-200/50 h-auto p-1">
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 bg-white/80 backdrop-blur-sm border border-neutral-200/50 h-auto p-1">
                   <TabsTrigger value="dashboard" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
                     <Activity size={14} className="md:w-4 md:h-4" />
                     <span className="hidden sm:inline">Dashboard</span>
@@ -265,6 +268,11 @@ export default function AdminDashboard() {
                     <Package size={14} className="md:w-4 md:h-4" />
                     <span className="hidden sm:inline">Prodotti</span>
                     <span className="sm:hidden">Prod</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="promotions" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
+                    <Percent size={14} className="md:w-4 md:h-4" />
+                    <span className="hidden sm:inline">Promozioni</span>
+                    <span className="sm:hidden">Promo</span>
                   </TabsTrigger>
                   <TabsTrigger value="users" className="flex items-center gap-1 md:gap-2 py-2 text-xs md:text-sm">
                     <Users size={14} className="md:w-4 md:h-4" />
@@ -516,6 +524,11 @@ export default function AdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Promotions Tab */}
+              <TabsContent value="promotions" className="space-y-4 md:space-y-6">
+                <PromotionsManager />
               </TabsContent>
 
               {/* Users Tab */}

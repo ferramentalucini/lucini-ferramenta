@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,8 +11,9 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useProducts, type Product } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
-import { Package, Euro, Hash, Image, Tag, ToggleLeft, Plus } from "lucide-react";
+import { Package, Euro, Hash, Image, Tag, ToggleLeft, Plus, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type ProductFormProps = {
   open: boolean;
@@ -25,29 +26,108 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
   const { categories, createCategory } = useCategories();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    name: product?.name || '',
-    description: product?.description || '',
-    price: product?.price?.toString() || '',
-    category: product?.category || '',
-    image_url: product?.image_url || '',
-    stock_quantity: product?.stock_quantity?.toString() || '0',
-    is_active: product?.is_active ?? true
+    name: '',
+    description: '',
+    price: '',
+    category: '',
+    image_url: '',
+    stock_quantity: '0',
+    is_active: true
   });
   const [loading, setLoading] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name,
+        description: product.description || '',
+        price: product.price?.toString() || '',
+        category: product.category || '',
+        image_url: product.image_url || '',
+        stock_quantity: product.stock_quantity?.toString() || '0',
+        is_active: product.is_active ?? true
+      });
+      setImagePreview(product.image_url);
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        category: '',
+        image_url: '',
+        stock_quantity: '0',
+        is_active: true
+      });
+      setImagePreview(null);
+    }
+    setImageFile(null);
+  }, [product, open]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(fileName, file);
+
+    if (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(data.path);
+
+    return publicUrlData.publicUrl;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setUploading(true);
 
     try {
+      let imageUrl = formData.image_url;
+      
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        } else {
+          toast({
+            title: "Errore",
+            description: "Errore nel caricamento dell'immagine",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       const productData = {
         name: formData.name,
         description: formData.description || null,
         price: formData.price ? parseFloat(formData.price) : null,
         category: formData.category || null,
-        image_url: formData.image_url || null,
+        image_url: imageUrl || null,
         stock_quantity: parseInt(formData.stock_quantity) || 0,
         is_active: formData.is_active
       };
@@ -59,19 +139,11 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
       }
 
       onOpenChange(false);
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        category: '',
-        image_url: '',
-        stock_quantity: '0',
-        is_active: true
-      });
     } catch (error) {
       console.error('Errore salvataggio prodotto:', error);
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -270,18 +342,52 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="image_url" className="text-sm font-medium text-neutral-700 flex items-center gap-2">
+                  <Label htmlFor="image-upload" className="text-sm font-medium text-neutral-700 flex items-center gap-2">
                     <Image size={14} />
-                    URL Immagine
+                    Immagine Prodotto
                   </Label>
-                  <Input
-                    id="image_url"
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                    className="mt-1 bg-white/80 border-neutral-200 focus:border-amber-400 focus:ring-amber-400"
-                    placeholder="https://esempio.com/immagine.jpg"
-                  />
+                  <div className="mt-2">
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      className="w-full bg-white/80 border-neutral-200 hover:bg-amber-50 hover:border-amber-300"
+                      disabled={uploading}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {imagePreview ? 'Cambia Immagine' : 'Seleziona Immagine'}
+                    </Button>
+                  </div>
+                  
+                  {imagePreview && (
+                    <div className="relative mt-3 inline-block">
+                      <img
+                        src={imagePreview}
+                        alt="Anteprima"
+                        className="w-32 h-32 object-cover rounded-lg border border-neutral-200"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setImageFile(null);
+                          setFormData(prev => ({ ...prev, image_url: '' }));
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
@@ -340,10 +446,10 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
             </Button>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploading}
               className="flex-1 h-12 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white font-medium"
             >
-              {loading ? 'Salvataggio...' : (product ? 'Aggiorna Prodotto' : 'Crea Prodotto')}
+              {uploading ? 'Caricamento...' : loading ? 'Salvataggio...' : (product ? 'Aggiorna Prodotto' : 'Crea Prodotto')}
             </Button>
           </div>
         </form>
