@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { usePromotions } from "@/hooks/usePromotions";
+import { useEffect as useEffectReact } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +34,43 @@ export default function ProductsPage() {
   
   const { role, loading: roleLoading, isAdmin } = useUserRole(user);
   const { products, loading: productsLoading } = usePublicProducts();
+  const { promotions, loading: promotionsLoading, refetch, getPromotionProducts } = usePromotions();
+  const [promoOnly, setPromoOnly] = useState(false);
+  const [promotionProducts, setPromotionProducts] = useState<{product_id: string, promotion_id: string}[]>([]);
+
+  // Carica tutte le relazioni prodotto-promozione attive
+  useEffectReact(() => {
+    const fetchPromotionProducts = async () => {
+      // Prendi solo promozioni attive e nel periodo
+      const now = new Date();
+      const activePromos = promotions.filter(p => p.is_active && new Date(p.start_date) <= now && new Date(p.end_date) >= now);
+      if (activePromos.length === 0) {
+        setPromotionProducts([]);
+        return;
+      }
+      // Prendi tutte le relazioni per queste promozioni
+      let allRelations: {product_id: string, promotion_id: string}[] = [];
+      for (const promo of activePromos) {
+        const rels = await getPromotionProducts(promo.id);
+        if (rels && Array.isArray(rels)) {
+          allRelations = allRelations.concat(rels.map((r: any) => ({ product_id: r.product_id, promotion_id: promo.id })));
+        }
+      }
+      setPromotionProducts(allRelations);
+    };
+    fetchPromotionProducts();
+  }, [promotions]);
+
+  // Mappa prodotto -> promozione (prende la prima promozione trovata)
+  const productPromotionMap: Record<string, typeof promotions[0]> = {};
+  promotionProducts.forEach(rel => {
+    if (!productPromotionMap[rel.product_id]) {
+      const promo = promotions.find(p => p.id === rel.promotion_id);
+      if (promo) productPromotionMap[rel.product_id] = promo;
+    }
+  });
+
+  const promoProductIds = new Set(promotionProducts.map(rel => rel.product_id));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -60,9 +99,7 @@ export default function ProductsPage() {
     let filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-      
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-      
       let matchesPrice = true;
       if (priceRange !== "all" && product.price) {
         switch (priceRange) {
@@ -80,10 +117,9 @@ export default function ProductsPage() {
             break;
         }
       }
-      
-      return matchesSearch && matchesCategory && matchesPrice;
+      const matchesPromo = !promoOnly || promoProductIds.has(product.id);
+      return matchesSearch && matchesCategory && matchesPrice && matchesPromo;
     });
-
     // Sort products
     switch (sortBy) {
       case "name":
@@ -96,13 +132,11 @@ export default function ProductsPage() {
         filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
         break;
       case "newest":
-        // Since created_at might not be available in PublicProduct, we'll sort by name as fallback
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
     }
-
     return filtered;
-  }, [products, searchTerm, selectedCategory, priceRange, sortBy]);
+  }, [products, searchTerm, selectedCategory, priceRange, sortBy, promoOnly, promoProductIds]);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -228,7 +262,7 @@ export default function ProductsPage() {
             </Button>
           </div>
 
-          {/* Filters Panel */}
+        {/* Filters Panel */}
           {showFilters && (
             <div className="border-t border-neutral-200 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -286,7 +320,7 @@ export default function ProductsPage() {
                   </Select>
                 </div>
 
-                <div className="flex items-end">
+                <div className="flex flex-col gap-2 items-end">
                   <Button
                     variant="outline"
                     onClick={clearFilters}
@@ -294,6 +328,14 @@ export default function ProductsPage() {
                   >
                     <X size={16} />
                     Cancella filtri
+                  </Button>
+                  <Button
+                    variant={promoOnly ? "default" : "outline"}
+                    onClick={() => setPromoOnly(v => !v)}
+                    className="w-full flex items-center gap-2"
+                  >
+                    <Package size={16} />
+                    {promoOnly ? "Mostra tutti" : "Solo in promozione"}
                   </Button>
                 </div>
               </div>
@@ -326,57 +368,82 @@ export default function ProductsPage() {
               </Card>
             ))
           ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <Card 
-                key={product.id}
-                className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group border-neutral-200/50 bg-white/80 backdrop-blur-sm"
-                onClick={() => navigate(`/prodotto/${product.id}`)}
-              >
-                <div className="h-48 overflow-hidden">
-                  {product.image_url ? (
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
-                      <Package size={32} className="text-neutral-400" />
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-bold text-neutral-800 flex-1">{product.name}</h3>
-                    {product.category && (
-                      <span className="text-xs px-2 py-1 bg-neutral-100 rounded-full text-neutral-600 ml-2 flex-shrink-0">
-                        {product.category}
-                      </span>
+            filteredProducts.map((product) => {
+              const promo = productPromotionMap[product.id];
+              let finalPrice = product.price;
+              let badge = null;
+              let oldPrice = null;
+              if (promo && finalPrice) {
+                if (promo.discount_type === 'percentage') {
+                  finalPrice = finalPrice * (1 - promo.discount_value / 100);
+                } else if (promo.discount_type === 'fixed_price') {
+                  finalPrice = promo.discount_value;
+                }
+                badge = (
+                  <span className="ml-2 px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full font-bold animate-pulse">
+                    In promozione
+                  </span>
+                );
+                oldPrice = (
+                  <span className="text-neutral-400 line-through text-sm ml-2">
+                    €{product.price?.toFixed(2)}
+                  </span>
+                );
+              }
+              return (
+                <Card 
+                  key={product.id}
+                  className={`overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group border-neutral-200/50 bg-white/80 backdrop-blur-sm ${promo ? 'ring-2 ring-pink-300' : ''}`}
+                  onClick={() => navigate(`/prodotto/${product.id}`)}
+                >
+                  <div className="h-48 overflow-hidden relative">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                        <Package size={32} className="text-neutral-400" />
+                      </div>
+                    )}
+                    {badge && (
+                      <div className="absolute top-2 right-2 z-10">{badge}</div>
                     )}
                   </div>
-                  
-                  {product.description && (
-                    <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
-                      {product.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex justify-between items-center">
-                    {product.price && (
-                      <p className="text-amber-600 font-semibold text-lg">
-                        €{product.price.toFixed(2)}
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-bold text-neutral-800 flex-1">{product.name}</h3>
+                      {product.category && (
+                        <span className="text-xs px-2 py-1 bg-neutral-100 rounded-full text-neutral-600 ml-2 flex-shrink-0">
+                          {product.category}
+                        </span>
+                      )}
+                    </div>
+                    {product.description && (
+                      <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
+                        {product.description}
                       </p>
                     )}
-                    <Button
-                      size="sm"
-                      className="bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600"
-                    >
-                      Scopri di più
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                    <div className="flex justify-between items-center">
+                      {finalPrice && (
+                        <div className="flex items-center">
+                          <p className={`font-semibold text-lg ${promo ? 'text-pink-600' : 'text-amber-600'}`}>€{finalPrice.toFixed(2)}</p>
+                          {oldPrice}
+                        </div>
+                      )}
+                      <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600"
+                      >
+                        Scopri di più
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
           ) : (
             // No products found
             <div className="col-span-full text-center py-12">

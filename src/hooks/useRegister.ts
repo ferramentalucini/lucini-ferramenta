@@ -53,7 +53,12 @@ export function useRegister() {
           emailRedirectTo: redirectUrl,
           data: {
             display_name: data.nomeUtente,
-            full_name: `${data.nome} ${data.cognome}`
+            full_name: `${data.nome} ${data.cognome}`,
+            nome: data.nome,
+            cognome: data.cognome,
+            nome_utente: data.nomeUtente,
+            numero_telefono: data.numeroTelefono || '',
+            role: ruolo
           }
         }
       });
@@ -65,72 +70,13 @@ export function useRegister() {
 
       console.log("✅ Utente auth creato con UID:", signupData.user.id);
 
-      // FASE 2: Pulizia e validazione dati usando UID dal form
-      console.log("🧹 FASE 2: Preparazione dati profilo...");
-      const cleanedData = cleanAndValidateUserData(signupData.user.id, {
-        ...data,
-        email: emailPerSupabase // Usa l'email già processata
-      }, ruolo);
-      
-      if (!cleanedData) {
-        throw new Error("Dati utente non validi dopo la pulizia");
-      }
-
-      console.log("✅ Dati preparati:", cleanedData);
-
-      // FASE 3: Salvataggio nel profilo
-      console.log("💾 FASE 3: Salvataggio profilo...");
-      let profileSaved = false;
-      let lastError: any = null;
-
-      for (let attempt = 1; attempt <= 5; attempt++) {
-        console.log(`💾 Tentativo salvataggio ${attempt}/5`);
-        
-        // Salvataggio diretto nella tabella user_profiles
-        const { error: profileErr } = await supabase
-          .from("user_profiles")
-          .insert({
-            id: cleanedData.uid,
-            email: cleanedData.email, // Questa è già l'email pulita
-            nome: cleanedData.nome,
-            cognome: cleanedData.cognome,
-            nome_utente: cleanedData.nomeUtente,
-            numero_telefono: cleanedData.numeroTelefono,
-            role: cleanedData.ruolo,
-          });
-
-        if (!profileErr) {
-          profileSaved = true;
-          console.log(`✅ Profilo salvato al tentativo ${attempt}`);
-          break;
-        }
-
-        lastError = profileErr;
-        console.error(`❌ Errore salvataggio tentativo ${attempt}:`, profileErr);
-        
-        if (attempt < 5) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-        }
-      }
-
-      if (!profileSaved) {
-        console.error("❌ Fallimento definitivo salvataggio profilo:", lastError);
-        // Pulizia: elimina l'utente auth se il profilo non è stato salvato
-        try {
-          await supabase.auth.admin.deleteUser(signupData.user.id);
-          console.log("🧹 Utente auth eliminato dopo fallimento salvataggio profilo");
-        } catch (deleteErr) {
-          console.error("❌ Errore eliminazione utente:", deleteErr);
-        }
-        const errorMsg = "Errore nel salvataggio del profilo dopo 5 tentativi: " + (lastError?.message ?? "Errore sconosciuto");
-        throw new Error(errorMsg);
-      }
-
+      // Ora il profilo viene creato automaticamente dal trigger Supabase. Nessun salvataggio manuale necessario.
       console.log("🎉 Registrazione completata con successo!");
       
+
       toast({
         title: "Registrazione completata!",
-        description: `Benvenuto ${cleanedData.nome}! Controlla la tua email per confermare l'account.`,
+        description: `Benvenuto ${data.nome}! Controlla la tua email per confermare l'account.`,
       });
 
       // Reindirizza alla pagina di attesa conferma email

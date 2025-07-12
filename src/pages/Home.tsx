@@ -17,7 +17,7 @@ import {
   Package
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
-import { usePublicProducts } from "@/hooks/usePublicProducts";
+import { useProductPromotions } from "@/hooks/useProductPromotions";
 import { useNavigate } from "react-router-dom";
 import ferramentaBg from "@/assets/ferramenta-bg.jpg";
 
@@ -27,7 +27,12 @@ export default function Home() {
   const [justLoggedIn, setJustLoggedIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { role, loading: roleLoading, isAdmin } = useUserRole(user);
-  const { products, loading: productsLoading } = usePublicProducts();
+  const {
+    products,
+    productsLoading,
+    productPromotionMap,
+    promoProductIds
+  } = useProductPromotions();
 
   useEffect(() => {
     // Controllo sessione attuale
@@ -85,10 +90,10 @@ export default function Home() {
       />
 
       {/* Floating Navigation */}
-      <nav className="fixed top-3 left-3 right-3 md:top-6 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 z-50 bg-white/90 backdrop-blur-xl border border-neutral-200/50 rounded-2xl px-4 py-3 md:px-6 md:py-4 shadow-xl">
-        <div className="flex items-center justify-between">
+      <nav className="fixed top-3 left-1/2 -translate-x-1/2 w-[98vw] max-w-5xl md:top-6 z-50 bg-white/90 backdrop-blur-xl border border-neutral-200/50 rounded-2xl px-2 py-2 md:px-10 md:py-2 shadow-xl transition-all">
+        <div className="flex items-center justify-between gap-8">
           {/* Logo */}
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-3 md:gap-5 min-w-0">
             <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center">
               <div className="w-3 h-3 md:w-4 md:h-4 bg-white rounded-sm"></div>
             </div>
@@ -96,7 +101,7 @@ export default function Home() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-10 min-w-0 flex-shrink flex-nowrap overflow-x-auto">
             <button 
               onClick={() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })}
               className="text-neutral-600 hover:text-neutral-900 transition-colors text-sm font-medium"
@@ -330,36 +335,65 @@ export default function Home() {
                 </div>
               ))
             ) : products.length > 0 ? (
-              products.slice(0, 4).map((product) => (
-                <div 
-                  key={product.id}
-                  className="bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group shadow-lg"
-                  onClick={() => navigate(`/prodotto/${product.id}`)}
-                >
-                  <div className="h-48 overflow-hidden">
-                    {product.image_url ? (
-                      <img 
-                        src={product.image_url} 
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
-                        <Package size={32} className="text-neutral-400" />
-                      </div>
-                    )}
+              products.slice(0, 4).map((product) => {
+                const promo = productPromotionMap[product.id];
+                let finalPrice = product.price;
+                let badge = null;
+                let oldPrice = null;
+                if (promo && finalPrice) {
+                  if (promo.discount_type === 'percentage') {
+                    finalPrice = finalPrice * (1 - promo.discount_value / 100);
+                  } else if (promo.discount_type === 'fixed_price') {
+                    finalPrice = promo.discount_value;
+                  }
+                  badge = (
+                    <span className="ml-2 px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full font-bold animate-pulse">
+                      In promozione
+                    </span>
+                  );
+                  oldPrice = (
+                    <span className="text-neutral-400 line-through text-sm ml-2">
+                      €{product.price?.toFixed(2)}
+                    </span>
+                  );
+                }
+                return (
+                  <div 
+                    key={product.id}
+                    className={`bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group shadow-lg ${promo ? 'ring-2 ring-pink-300' : ''}`}
+                    onClick={() => navigate(`/prodotto/${product.id}`)}
+                  >
+                    <div className="h-48 overflow-hidden relative">
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                          <Package size={32} className="text-neutral-400" />
+                        </div>
+                      )}
+                      {badge && (
+                        <div className="absolute top-2 right-2 z-10">{badge}</div>
+                      )}
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-lg font-bold text-neutral-800 mb-2">{product.name}</h3>
+                      {finalPrice && (
+                        <div className="flex items-center mb-4">
+                          <p className={`font-semibold text-lg ${promo ? 'text-pink-600' : 'text-amber-600'}`}>€{finalPrice.toFixed(2)}</p>
+                          {oldPrice}
+                        </div>
+                      )}
+                      <button className="w-full py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl font-medium hover:from-amber-500 hover:to-yellow-600 transition-all">
+                        Scopri di più
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-bold text-neutral-800 mb-2">{product.name}</h3>
-                    {product.price && (
-                      <p className="text-amber-600 font-semibold mb-4">€{product.price.toFixed(2)}</p>
-                    )}
-                    <button className="w-full py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl font-medium hover:from-amber-500 hover:to-yellow-600 transition-all">
-                      Scopri di più
-                    </button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               // No products fallback
               <div className="col-span-full text-center py-12">

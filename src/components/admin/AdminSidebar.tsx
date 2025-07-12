@@ -9,7 +9,8 @@ import {
   Home,
   User,
   LogOut,
-  Shield
+  Shield,
+  Percent
 } from "lucide-react";
 import {
   Sidebar,
@@ -50,6 +51,12 @@ const adminMenuItems = [
     title: "Prodotti", 
     icon: Package,
     description: "Gestione catalogo"
+  },
+  {
+    id: "promotions",
+    title: "Promozioni",
+    icon: Percent,
+    description: "Gestione sconti e offerte"
   },
   { 
     id: "users", 

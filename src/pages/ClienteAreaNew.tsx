@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,9 +24,13 @@ export default function ClienteAreaNew() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const { role, isAdmin } = useUserRole(user);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileData, setProfileData] = useState({ nome: "", cognome: "", nome_utente: "", numero_telefono: "" });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     checkAuth();
+    // eslint-disable-next-line
   }, [userId]);
 
   const checkAuth = async () => {
@@ -60,6 +66,12 @@ export default function ClienteAreaNew() {
 
       if (error) {
         console.error("Errore nel caricamento profilo:", error);
+        setShowProfileModal(true);
+        return;
+      }
+
+      if (!userProfile) {
+        setShowProfileModal(true);
         return;
       }
 
@@ -85,21 +97,40 @@ export default function ClienteAreaNew() {
     );
   }
 
-  if (!profile) {
+  // Modale per inserimento profilo se mancante
+  if (showProfileModal) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sabbia to-cemento/20">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <p className="text-center text-red-600">Errore nel caricamento del profilo</p>
-            <Button 
-              onClick={() => window.location.replace("/auth")} 
-              className="w-full mt-4"
-            >
-              Torna al login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <Dialog open={showProfileModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Completa il tuo profilo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            <Input placeholder="Nome" value={profileData.nome} onChange={e => setProfileData(p => ({ ...p, nome: e.target.value }))} />
+            <Input placeholder="Cognome" value={profileData.cognome} onChange={e => setProfileData(p => ({ ...p, cognome: e.target.value }))} />
+            <Input placeholder="Nome utente" value={profileData.nome_utente} onChange={e => setProfileData(p => ({ ...p, nome_utente: e.target.value }))} />
+            <Input placeholder="Telefono" value={profileData.numero_telefono} onChange={e => setProfileData(p => ({ ...p, numero_telefono: e.target.value }))} />
+            <Button className="w-full" onClick={async () => {
+              setSavingProfile(true);
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session) return;
+              await supabase.from("user_profiles").insert({
+                id: session.user.id,
+                nome: profileData.nome,
+                cognome: profileData.cognome,
+                nome_utente: profileData.nome_utente,
+                numero_telefono: profileData.numero_telefono,
+                email: session.user.email,
+                role: "cliente"
+              });
+              setSavingProfile(false);
+              setShowProfileModal(false);
+              window.location.reload();
+            }}>{savingProfile ? "Salvataggio..." : "Salva profilo"}</Button>
+          </div>
+        </DialogContent>
+
+      </Dialog>
     );
   }
 
@@ -210,42 +241,14 @@ export default function ClienteAreaNew() {
           </Card>
         </div>
 
-        {/* Sezioni future */}
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* Chat privata con amministratore */}
+        <div className="my-12">
           <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
             <CardHeader>
-              <CardTitle className="text-antracite">I miei ordini</CardTitle>
-              <CardDescription>Visualizza i tuoi acquisti</CardDescription>
+              <CardTitle className="text-antracite">Chat con l'amministrazione</CardTitle>
+              <CardDescription>Comunicazioni dirette con lo staff</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-cemento text-center py-8">
-                Nessun ordine effettuato
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
-            <CardHeader>
-              <CardTitle className="text-antracite">Lista desideri</CardTitle>
-              <CardDescription>I tuoi prodotti preferiti</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-cemento text-center py-8">
-                Lista vuota
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
-            <CardHeader>
-              <CardTitle className="text-antracite">Assistenza</CardTitle>
-              <CardDescription>Hai bisogno di aiuto?</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-cemento text-center py-8">
-                Contattaci per supporto
-              </p>
-            </CardContent>
+            {/* Chat utente rimossa */}
           </Card>
         </div>
 

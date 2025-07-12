@@ -4,12 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ShoppingCart, Package } from 'lucide-react';
 import { PublicProduct } from '@/hooks/usePublicProducts';
+import { useProductPromotions } from '@/hooks/useProductPromotions';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<PublicProduct | null>(null);
   const [loading, setLoading] = useState(true);
+  const { products, productPromotionMap } = useProductPromotions();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -53,24 +55,50 @@ export default function ProductDetail() {
           <Package size={64} className="mx-auto mb-4 text-muted-foreground" />
           <h1 className="text-2xl font-bold mb-2">Prodotto non trovato</h1>
           <p className="text-muted-foreground mb-4">Il prodotto richiesto non esiste o non è disponibile.</p>
-          <Button onClick={() => navigate('/')}>
+          <Button onClick={() => navigate('/prodotti')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Torna alla Home
+            Torna ai Prodotti
           </Button>
         </div>
       </div>
     );
   }
 
+  // Trova la promozione attiva per questo prodotto
+  const promo = product && productPromotionMap[product.id];
+  let finalPrice = product?.price;
+  let badge = null;
+  let oldPrice = null;
+  if (promo && finalPrice) {
+    if (promo.discount_type === 'percentage') {
+      finalPrice = finalPrice * (1 - promo.discount_value / 100);
+    } else if (promo.discount_type === 'fixed_price') {
+      finalPrice = promo.discount_value;
+    }
+    badge = (
+      <span className="ml-2 px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full font-bold animate-pulse">
+        In promozione
+      </span>
+    );
+    oldPrice = (
+      <span className="text-neutral-400 line-through text-sm ml-2">
+        €{product.price?.toFixed(2)}
+      </span>
+    );
+  }
+
+  // Altri prodotti (escludi quello attuale)
+  const otherProducts = products.filter(p => p.id !== product.id).slice(0, 4);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${promo ? 'ring-2 ring-pink-300' : ''}`}> 
       {/* Header */}
       <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/prodotti')}
             className="flex items-center gap-2"
           >
             <ArrowLeft size={16} />
@@ -90,7 +118,7 @@ export default function ProductDetail() {
         <div className="grid md:grid-cols-2 gap-12">
           {/* Product Image */}
           <div className="space-y-4">
-            <div className="aspect-square bg-muted rounded-2xl overflow-hidden">
+            <div className="aspect-square bg-muted rounded-2xl overflow-hidden relative">
               {product.image_url ? (
                 <img 
                   src={product.image_url} 
@@ -101,6 +129,9 @@ export default function ProductDetail() {
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <Package size={64} />
                 </div>
+              )}
+              {badge && (
+                <div className="absolute top-2 right-2 z-10">{badge}</div>
               )}
             </div>
           </div>
@@ -119,8 +150,11 @@ export default function ProductDetail() {
 
             <div className="flex items-center justify-between py-4 border-y">
               <div>
-                {product.price ? (
-                  <p className="text-3xl font-bold text-primary">€{product.price.toFixed(2)}</p>
+                {finalPrice ? (
+                  <div className="flex items-center">
+                    <p className={`text-3xl font-bold ${promo ? 'text-pink-600' : 'text-primary'}`}>€{finalPrice.toFixed(2)}</p>
+                    {oldPrice}
+                  </div>
                 ) : (
                   <p className="text-lg text-muted-foreground">Prezzo su richiesta</p>
                 )}
@@ -153,6 +187,71 @@ export default function ProductDetail() {
               </Button>
             </div>
           </div>
+        </div>
+      </div>
+      {/* Altri prodotti suggeriti */}
+      <div className="max-w-6xl mx-auto px-6 pb-16">
+        <h2 className="text-2xl font-bold mb-6 mt-16 text-neutral-800">Altri prodotti che potrebbero interessarti</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {otherProducts.map((prod) => {
+            const promo = productPromotionMap[prod.id];
+            let finalPrice = prod.price;
+            let badge = null;
+            let oldPrice = null;
+            if (promo && finalPrice) {
+              if (promo.discount_type === 'percentage') {
+                finalPrice = finalPrice * (1 - promo.discount_value / 100);
+              } else if (promo.discount_type === 'fixed_price') {
+                finalPrice = promo.discount_value;
+              }
+              badge = (
+                <span className="ml-2 px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full font-bold animate-pulse">
+                  In promozione
+                </span>
+              );
+              oldPrice = (
+                <span className="text-neutral-400 line-through text-sm ml-2">
+                  €{prod.price?.toFixed(2)}
+                </span>
+              );
+            }
+            return (
+              <div 
+                key={prod.id}
+                className={`bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group shadow-lg ${promo ? 'ring-2 ring-pink-300' : ''}`}
+                onClick={() => navigate(`/prodotto/${prod.id}`)}
+              >
+                <div className="h-48 overflow-hidden relative">
+                  {prod.image_url ? (
+                    <img 
+                      src={prod.image_url} 
+                      alt={prod.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                      <Package size={32} className="text-neutral-400" />
+                    </div>
+                  )}
+                  {badge && (
+                    <div className="absolute top-2 right-2 z-10">{badge}</div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-bold text-neutral-800 mb-2">{prod.name}</h3>
+                  {finalPrice && (
+                    <div className="flex items-center mb-2">
+                      <p className={`font-semibold text-lg ${promo ? 'text-pink-600' : 'text-amber-600'}`}>€{finalPrice.toFixed(2)}</p>
+                      {oldPrice}
+                    </div>
+                  )}
+                  <button className="w-full py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-white rounded-xl font-medium hover:from-amber-500 hover:to-yellow-600 transition-all">
+                    Scopri di più
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

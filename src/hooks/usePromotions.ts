@@ -36,7 +36,16 @@ export function usePromotions() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPromotions((data || []) as Promotion[]);
+      let promos = (data || []) as Promotion[];
+      // Elimina promozioni scadute dal DB
+      const now = new Date();
+      const expiredPromos = promos.filter(p => new Date(p.end_date) < now);
+      for (const promo of expiredPromos) {
+        await supabase.from('promotions').delete().eq('id', promo.id);
+      }
+      // Aggiorna lo stato solo con promozioni non scadute
+      promos = promos.filter(p => new Date(p.end_date) >= now);
+      setPromotions(promos);
     } catch (error) {
       console.error('Errore caricamento promozioni:', error);
       toast({

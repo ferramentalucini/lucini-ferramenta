@@ -38,6 +38,7 @@ import { useAdminStats } from "@/hooks/useAdminStats";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
 import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
+
 import { ProductForm } from "@/components/admin/ProductForm";
 import { PromotionsManager } from "@/components/admin/PromotionsManager";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -538,7 +539,9 @@ export default function AdminDashboard() {
 
               {/* Communication Tab */}
               <TabsContent value="communication" className="space-y-4 md:space-y-6">
-                <CommunicationCenter />
+                <div className="w-full flex flex-col items-center">
+                  <CommunicationCenter />
+                </div>
               </TabsContent>
 
               {/* Analytics Tab */}
