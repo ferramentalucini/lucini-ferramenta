@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNotifications } from './useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,6 +17,7 @@ export function useMessages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { addNotification } = useNotifications();
 
   // fetchMessages legacy rimossa, usiamo solo la versione aggiornata con filtri
   const fetchMessages = async (filter?: {
@@ -57,8 +59,10 @@ export function useMessages() {
   // sendMessage legacy rimossa, usiamo solo la versione aggiornata
   const sendMessage = async (messageData: {
     recipient_id: string;
+    subject: string;
     content: string;
-    message_type: 'user_group' | 'admin_private';
+    message_type: 'user_group' | 'admin_private' | 'system';
+    type?: 'info' | 'warning' | 'error' | 'success' | 'chat' | string; // supporta custom
   }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -70,6 +74,7 @@ export function useMessages() {
           {
             sender_id: user.id,
             recipient_id: messageData.recipient_id,
+            subject: messageData.subject,
             content: messageData.content,
             message_type: messageData.message_type
           } as any
@@ -78,6 +83,25 @@ export function useMessages() {
         .single();
 
       if (error) throw error;
+
+      // Notifica il destinatario
+      if (messageData.message_type === 'system') {
+        await addNotification({
+          userId: messageData.recipient_id,
+          title: messageData.subject,
+          message: messageData.content,
+          type: messageData.type || 'info',
+          link: undefined
+        });
+      } else {
+        await addNotification({
+          userId: messageData.recipient_id,
+          title: 'Nuovo messaggio',
+          message: messageData.content,
+          type: 'chat',
+          link: `/chat/${data?.id || ''}`
+        });
+      }
 
       toast({
         title: "Successo",

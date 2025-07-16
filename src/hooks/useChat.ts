@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useNotifications } from './useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import type { Conversation, ConversationType, ConversationParticipant, ChatMessage } from '../types/chat';
 
 export function useChat(conversationId: string | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     if (!conversationId) return;
@@ -35,8 +37,36 @@ export function useChat(conversationId: string | null) {
   }, [conversationId]);
 
   const sendMessage = useCallback(async (msg: Omit<ChatMessage, 'id' | 'created_at'>) => {
-    await (supabase as any).from('chat_messages').insert([msg]);
-  }, []);
+    // Invia il messaggio
+    const { data, error } = await (supabase as any).from('chat_messages').insert([msg]).select().single();
+    if (!error && data) {
+      // Notifica il destinatario (solo se diverso dal mittente)
+      const recipientId = msg.sender_role === 'admin' ?
+        // Se admin, cerca l'altro partecipante
+        (await (supabase as any)
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', msg.conversation_id)
+          .neq('user_id', msg.sender_id)
+        ).data?.[0]?.user_id :
+        // Se user, notifica l'admin (assumiamo che admin sia partecipante)
+        (await (supabase as any)
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', msg.conversation_id)
+          .neq('user_id', msg.sender_id)
+        ).data?.[0]?.user_id;
+      if (recipientId) {
+        await addNotification({
+          userId: recipientId,
+          title: 'Nuovo messaggio in chat',
+          message: msg.content,
+          type: 'chat',
+          link: `/chat/${msg.conversation_id}`
+        });
+      }
+    }
+  }, [addNotification]);
 
   return { messages, loading, sendMessage };
 }
@@ -58,8 +88,8 @@ export async function createAdminAdminConversation(admin1: string, admin2: strin
   if (error) throw error;
   const conversation_id = conv.id;
   await (supabase as any).from('conversation_participants').insert([
-    { conversation_id, user_id: admin1 },
-    { conversation_id, user_id: admin2 }
+    { conversation_id, user_id: admin1, role_in_conversation: 'amministratore' },
+    { conversation_id, user_id: admin2, role_in_conversation: 'amministratore' }
   ]);
   return conv as Conversation;
 }

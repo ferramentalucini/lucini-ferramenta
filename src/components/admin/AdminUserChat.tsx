@@ -14,6 +14,10 @@ export function AdminUserChat({ currentUser }) {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [newMsg, setNewMsg] = useState('');
 
+  // DEBUG LOG
+  console.log('[AdminUserChat] users:', users);
+  console.log('[AdminUserChat] currentUser:', currentUser, 'role:', role);
+
   // L'admin può chattare con chiunque, l'utente solo con admin
   const isAdmin = role === 'amministratore' || role === 'admin';
   const adminUser = users.find(u => u.role === 'amministratore' || u.role === 'admin');
@@ -40,9 +44,8 @@ export function AdminUserChat({ currentUser }) {
     if (!newMsg || !selectedUserId) return;
     await sendMessage({
       recipient_id: selectedUserId,
-      subject: '',
       content: newMsg,
-      message_type: 'chat'
+      message_type: 'user_group'
     });
     setNewMsg('');
   };

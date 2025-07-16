@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from '../hooks/useCart';
+import { Heart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { 
@@ -21,9 +24,11 @@ import { useEffect as useEffectReact } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import CartModalTrigger from "@/components/user/CartModalTrigger";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ProductsPage() {
+  const { dispatch, wishlist, wishlistDispatch } = useCart();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -177,8 +182,9 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Auth Section */}
+            {/* Auth Section + Cart Modal Trigger */}
             <div className="flex items-center gap-2">
+              <CartModalTrigger className="ml-2" />
               {user ? (
                 <div className="flex items-center gap-2">
                   {roleLoading ? (
@@ -394,9 +400,8 @@ export default function ProductsPage() {
                 <Card 
                   key={product.id}
                   className={`overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group border-neutral-200/50 bg-white/80 backdrop-blur-sm ${promo ? 'ring-2 ring-pink-300' : ''}`}
-                  onClick={() => navigate(`/prodotto/${product.id}`)}
                 >
-                  <div className="h-48 overflow-hidden relative">
+                  <div className="h-48 overflow-hidden relative" onClick={() => navigate(`/prodotto/${product.id}`)}>
                     {product.image_url ? (
                       <img 
                         src={product.image_url} 
@@ -426,7 +431,21 @@ export default function ProductsPage() {
                         {product.description}
                       </p>
                     )}
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center gap-2">
+                      <button
+                        className={`mr-2 ${wishlist.items.includes(product.id) ? 'text-pink-500' : 'text-neutral-300'} hover:text-pink-500 transition`}
+                        title={wishlist.items.includes(product.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (wishlist.items.includes(product.id)) {
+                            wishlistDispatch({ type: 'REMOVE_WISHLIST', id: product.id });
+                          } else {
+                            wishlistDispatch({ type: 'ADD_WISHLIST', id: product.id });
+                          }
+                        }}
+                      >
+                        <Heart fill={wishlist.items.includes(product.id) ? '#ec4899' : 'none'} size={20} />
+                      </button>
                       {finalPrice && (
                         <div className="flex items-center">
                           <p className={`font-semibold text-lg ${promo ? 'text-pink-600' : 'text-amber-600'}`}>€{finalPrice.toFixed(2)}</p>
@@ -435,7 +454,33 @@ export default function ProductsPage() {
                       )}
                       <Button
                         size="sm"
+                        variant="outline"
+                        className="border-[#b43434] text-[#b43434] hover:bg-[#f8e8e3] p-2"
+                        onClick={e => {
+                          e.stopPropagation();
+                          dispatch({
+                            type: 'ADD_ITEM',
+                            product: {
+                              id: product.id,
+                              name: product.name,
+                              price: finalPrice || product.price,
+                              image: product.image_url,
+                              quantity: 1,
+                            },
+                          });
+                        }}
+                        disabled={product.stock_quantity <= 0}
+                        title="Aggiungi al carrello"
+                      >
+                        <ShoppingCart size={20} />
+                      </Button>
+                      <Button
+                        size="sm"
                         className="bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600"
+                        onClick={e => {
+                          e.stopPropagation();
+                          navigate(`/prodotto/${product.id}`);
+                        }}
                       >
                         Scopri di più
                       </Button>

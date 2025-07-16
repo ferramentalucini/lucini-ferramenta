@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import CartSection from '../components/user/CartSection';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import UserAdminGroupChat from '@/components/user/UserAdminGroupChat';
 import { Button } from "@/components/ui/button";
 import { User, LogOut, Home, Mail, Phone, AtSign } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -21,8 +23,9 @@ type UserProfile = {
 export default function ClienteAreaNew() {
   const { userId } = useParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [hasAdminChat, setHasAdminChat] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { role, isAdmin } = useUserRole(user);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileData, setProfileData] = useState({ nome: "", cognome: "", nome_utente: "", numero_telefono: "" });
@@ -32,6 +35,22 @@ export default function ClienteAreaNew() {
     checkAuth();
     // eslint-disable-next-line
   }, [userId]);
+
+  // Controlla se esiste una conversazione user-admin per abilitare la chat
+  useEffect(() => {
+    const checkAdminChat = async () => {
+      if (!user) return;
+      // Usa il client JS non tipizzato per accedere a tabelle custom
+      const { data: conv } = await (supabase as any)
+        .from('conversations')
+        .select('id')
+        .eq('type', 'user-admin')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setHasAdminChat(!!conv);
+    };
+    checkAdminChat();
+  }, [user]);
 
   const checkAuth = async () => {
     try {
@@ -172,7 +191,7 @@ export default function ClienteAreaNew() {
         {/* Email Confirmation Alert */}
         {userId && <EmailConfirmationAlert userId={userId} />}
 
-        {/* Benvenuto */}
+        {/* Benvenuto + Storico ordini */}
         <Card className="mb-8 bg-white/95 backdrop-blur-sm shadow-xl border-0">
           <CardHeader className="bg-gradient-to-r from-senape/10 to-ruggine/10">
             <CardTitle className="text-2xl text-antracite font-oswald">
@@ -181,16 +200,35 @@ export default function ClienteAreaNew() {
             <CardDescription className="text-lg flex items-center gap-2">
               È un piacere averti nella famiglia Ferramenta Lucini
             </CardDescription>
+            <div className="mt-4">
+              <Button variant="outline" onClick={() => window.location.replace('/i-miei-ordini')}>
+                Visualizza i tuoi ordini
+              </Button>
+            </div>
           </CardHeader>
         </Card>
 
         {/* Informazioni profilo */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Carrello separato */}
+          <div className="mb-8">
+            <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-antracite">
+                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-13z" stroke="#b43434" strokeWidth="2"/><circle cx="9" cy="20" r="1" fill="#b43434"/><circle cx="18" cy="20" r="1" fill="#b43434"/></svg>
+                  Carrello
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CartSection />
+              </CardContent>
+            </Card>
+          </div>
           <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-antracite">
                 <User size={20} />
-                Informazioni Personali
+                Informazioni personali e contatti
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -201,7 +239,6 @@ export default function ClienteAreaNew() {
                   <p className="text-cemento">{profile.nome} {profile.cognome}</p>
                 </div>
               </div>
-              
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <AtSign size={18} className="text-senape" />
                 <div>
@@ -209,17 +246,6 @@ export default function ClienteAreaNew() {
                   <p className="text-cemento">@{profile.nome_utente}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-antracite">
-                <Mail size={20} />
-                Contatti
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <Mail size={18} className="text-senape" />
                 <div>
@@ -227,7 +253,6 @@ export default function ClienteAreaNew() {
                   <p className="text-cemento">{profile.email}</p>
                 </div>
               </div>
-              
               {profile.numero_telefono && (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Phone size={18} className="text-senape" />
@@ -248,7 +273,13 @@ export default function ClienteAreaNew() {
               <CardTitle className="text-antracite">Chat con l'amministrazione</CardTitle>
               <CardDescription>Comunicazioni dirette con lo staff</CardDescription>
             </CardHeader>
-            {/* Chat utente rimossa */}
+            <CardContent>
+              {hasAdminChat && user ? (
+                <UserAdminGroupChat user={user} />
+              ) : (
+                <div className="text-neutral-400 text-center py-8">Nessuna conversazione attiva con l'amministrazione.<br/>Riceverai qui i messaggi quando uno staff ti contatterà.</div>
+              )}
+            </CardContent>
           </Card>
         </div>
 

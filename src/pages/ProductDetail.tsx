@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useCart } from '../hooks/useCart';
+import { Heart } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,6 +9,7 @@ import { PublicProduct } from '@/hooks/usePublicProducts';
 import { useProductPromotions } from '@/hooks/useProductPromotions';
 
 export default function ProductDetail() {
+  const { dispatch, wishlist, wishlistDispatch } = useCart();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<PublicProduct | null>(null);
@@ -90,6 +93,20 @@ export default function ProductDetail() {
   // Altri prodotti (escludi quello attuale)
   const otherProducts = products.filter(p => p.id !== product.id).slice(0, 4);
 
+  const handleAddToCart = () => {
+    if (!product) return;
+    dispatch({
+      type: 'ADD_ITEM',
+      product: {
+        id: product.id,
+        name: product.name,
+        price: finalPrice || product.price,
+        image: product.image_url,
+        quantity: 1,
+      },
+    });
+  };
+
   return (
     <div className={`min-h-screen bg-background ${promo ? 'ring-2 ring-pink-300' : ''}`}> 
       {/* Header */}
@@ -149,7 +166,7 @@ export default function ProductDetail() {
             </div>
 
             <div className="flex items-center justify-between py-4 border-y">
-              <div>
+              <div className="flex items-center gap-2">
                 {finalPrice ? (
                   <div className="flex items-center">
                     <p className={`text-3xl font-bold ${promo ? 'text-pink-600' : 'text-primary'}`}>€{finalPrice.toFixed(2)}</p>
@@ -158,6 +175,19 @@ export default function ProductDetail() {
                 ) : (
                   <p className="text-lg text-muted-foreground">Prezzo su richiesta</p>
                 )}
+                <button
+                  className={`ml-4 ${wishlist.items.includes(product.id) ? 'text-pink-500' : 'text-neutral-300'} hover:text-pink-500 transition`}
+                  title={wishlist.items.includes(product.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                  onClick={() => {
+                    if (wishlist.items.includes(product.id)) {
+                      wishlistDispatch({ type: 'REMOVE_WISHLIST', id: product.id });
+                    } else {
+                      wishlistDispatch({ type: 'ADD_WISHLIST', id: product.id });
+                    }
+                  }}
+                >
+                  <Heart fill={wishlist.items.includes(product.id) ? '#ec4899' : 'none'} size={28} />
+                </button>
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Disponibilità</p>
@@ -172,6 +202,7 @@ export default function ProductDetail() {
                 className="w-full" 
                 size="lg"
                 disabled={product.stock_quantity <= 0}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 {product.stock_quantity > 0 ? 'Aggiungi al Carrello' : 'Non Disponibile'}

@@ -26,8 +26,12 @@ export function useUsers() {
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('[useUsers] Fetched users:', data, error);
       if (error) throw error;
       setUsers(data || []);
+      setTimeout(() => {
+        console.log('[useUsers] Stato users dopo set:', data || []);
+      }, 100);
     } catch (error) {
       console.error('Errore caricamento utenti:', error);
       toast({
